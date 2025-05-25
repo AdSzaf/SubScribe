@@ -472,7 +472,7 @@ public class MainController implements Initializable {
     }
 
     private void updateLastUpdateTime() {
-        lastUpdateLabel.setText("Last updated: " + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+        lastUpdateLabel.setText("Last updated: " + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
     }
 
     private void showAlert(String title, String message) {
