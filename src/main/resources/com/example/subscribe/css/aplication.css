@@ -1,0 +1,191 @@
+/* Root styling */
+.root {
+    -fx-font-family: "Segoe UI", "Arial", sans-serif;
+    -fx-font-size: 13px;
+    -fx-base: #f4f4f4;
+    -fx-background: #ffffff;
+}
+
+/* Header styling */
+.header-label {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+/* Primary button styling */
+.primary-button {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 10px 20px;
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 3, 0, 0, 1);
+}
+
+.primary-button:hover {
+    -fx-background-color: #2980b9;
+}
+
+.primary-button:pressed {
+    -fx-background-color: #21618c;
+}
+
+/* Summary cards styling */
+.summary-section {
+    -fx-padding: 10px 0;
+}
+
+.summary-card {
+    -fx-background-color: white;
+    -fx-padding: 20px;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);
+    -fx-border-color: #e0e0e0;
+    -fx-border-width: 1px;
+}
+
+.summary-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #666666;
+    -fx-font-weight: normal;
+}
+
+.summary-value {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+/* Table styling */
+.table-view {
+    -fx-background-color: white;
+    -fx-border-color: #e0e0e0;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+
+.table-view .column-header {
+    -fx-background-color: #f8f9fa;
+    -fx-font-weight: bold;
+    -fx-text-fill: #495057;
+    -fx-border-color: #dee2e6;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #f8f9fa;
+}
+
+.table-row-cell {
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-style: solid;
+    -fx-table-cell-border-color: #e9ecef;
+}
+
+.table-row-cell:hover {
+    -fx-background-color: #f8f9fa;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #e3f2fd;
+}
+
+/* Status bar styling */
+.status-bar {
+    -fx-background-color: #f8f9fa;
+    -fx-border-color: #dee2e6;
+    -fx-border-width: 1px 0 0 0;
+    -fx-padding: 8px;
+}
+
+/* Form controls */
+.text-field {
+    -fx-background-color: white;
+    -fx-border-color: #ced4da;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-padding: 8px 12px;
+}
+
+.text-field:focused {
+    -fx-border-color: #3498db;
+    -fx-border-width: 2px;
+}
+
+.combo-box {
+    -fx-background-color: white;
+    -fx-border-color: #ced4da;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+
+.combo-box:focused {
+    -fx-border-color: #3498db;
+    -fx-border-width: 2px;
+}
+
+/* Menu bar styling */
+.menu-bar {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e0e0e0;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.menu {
+    -fx-padding: 5px 10px;
+}
+
+.menu:hover {
+    -fx-background-color: #f8f9fa;
+}
+
+.menu-item {
+    -fx-padding: 8px 15px;
+}
+
+.menu-item:hover {
+    -fx-background-color: #e9ecef;
+}
+
+/* Button styling in table cells */
+.table-view .button {
+    -fx-padding: 4px 8px;
+    -fx-font-size: 11px;
+    -fx-background-radius: 3px;
+    -fx-border-radius: 3px;
+}
+
+/* Alert and dialog styling */
+.alert {
+    -fx-background-color: white;
+}
+
+.alert .header-panel {
+    -fx-background-color: #f8f9fa;
+    -fx-border-color: #dee2e6;
+}
+
+/* Custom colors for different subscription statuses */
+.status-active {
+    -fx-text-fill: #28a745;
+    -fx-font-weight: bold;
+}
+
+.status-inactive {
+    -fx-text-fill: #dc3545;
+    -fx-font-weight: bold;
+}
+
+.due-soon {
+    -fx-background-color: #fff3cd;
+    -fx-text-fill: #856404;
+}
+
+.overdue {
+    -fx-background-color: #f8d7da;
+    -fx-text-fill: #721c24;
+}

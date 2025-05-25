@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.example.subscribe.controllers.MainController">
+
+    <!-- Top Menu Bar -->
+    <top>
+        <MenuBar>
+            <Menu text="File">
+                <MenuItem text="Import Subscriptions" onAction="#importSubscriptions"/>
+                <MenuItem text="Export Subscriptions" onAction="#exportSubscriptions"/>
+                <SeparatorMenuItem />
+                <MenuItem text="Exit" onAction="#exitApplication"/>
+            </Menu>
+            <Menu text="Edit">
+                <MenuItem text="Settings" onAction="#openSettings"/>
+            </Menu>
+            <Menu text="View">
+                <MenuItem text="Statistics" onAction="#openStatistics"/>
+                <MenuItem text="Calendar View" onAction="#openCalendarView"/>
+            </Menu>
+            <Menu text="Help">
+                <MenuItem text="About" onAction="#showAbout"/>
+            </Menu>
+        </MenuBar>
+    </top>
+
+    <!-- Main Content Area -->
+    <center>
+        <VBox spacing="10.0">
+            <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+            </padding>
+
+            <!-- Header Section -->
+            <HBox alignment="CENTER_LEFT" spacing="20.0">
+                <Label text="My Subscriptions" styleClass="header-label">
+                    <font>
+                        <Font name="System Bold" size="24.0" />
+                    </font>
+                </Label>
+                <Region HBox.hgrow="ALWAYS" />
+                <Button fx:id="addSubscriptionBtn" text="Add Subscription"
+                        onAction="#addSubscription" styleClass="primary-button">
+                    <font>
+                        <Font size="14.0" />
+                    </font>
+                </Button>
+            </HBox>
+
+            <!-- Summary Cards -->
+            <HBox spacing="15.0" styleClass="summary-section">
+                <VBox styleClass="summary-card" spacing="5.0" HBox.hgrow="ALWAYS">
+                    <Label text="Total Monthly Cost" styleClass="summary-label"/>
+                    <Label fx:id="totalMonthlyCostLabel" styleClass="summary-value">
+                        <text>$0.00</text>
+                    </Label>
+                </VBox>
+                <VBox styleClass="summary-card" spacing="5.0" HBox.hgrow="ALWAYS">
+                    <Label text="Active Subscriptions" styleClass="summary-label"/>
+                    <Label fx:id="activeSubscriptionsLabel" text="0" styleClass="summary-value"/>
+                </VBox>
+                <VBox styleClass="summary-card" spacing="5.0" HBox.hgrow="ALWAYS">
+                    <Label text="Due This Week" styleClass="summary-label"/>
+                    <Label fx:id="dueThisWeekLabel" text="0" styleClass="summary-value"/>
+                </VBox>
+            </HBox>
+
+            <!-- Search and Filter Section -->
+            <HBox spacing="10.0" alignment="CENTER_LEFT">
+                <Label text="Search:"/>
+                <TextField fx:id="searchField" promptText="Search subscriptions..."
+                           onKeyReleased="#filterSubscriptions" prefWidth="200.0"/>
+                <Label text="Category:"/>
+                <ComboBox fx:id="categoryFilter" onAction="#filterSubscriptions" prefWidth="150.0"/>
+                <Label text="Status:"/>
+                <ComboBox fx:id="statusFilter" onAction="#filterSubscriptions" prefWidth="120.0"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="Refresh" onAction="#refreshSubscriptions"/>
+            </HBox>
+
+            <!-- Subscriptions Table -->
+            <TableView fx:id="subscriptionsTable" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="nameColumn" text="Name" prefWidth="200.0"/>
+                    <TableColumn fx:id="costColumn" text="Cost" prefWidth="100.0"/>
+                    <TableColumn fx:id="currencyColumn" text="Currency" prefWidth="80.0"/>
+                    <TableColumn fx:id="categoryColumn" text="Category" prefWidth="120.0"/>
+                    <TableColumn fx:id="nextPaymentColumn" text="Next Payment" prefWidth="120.0"/>
+                    <TableColumn fx:id="statusColumn" text="Status" prefWidth="100.0"/>
+                    <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="150.0"/>
+                </columns>
+                <columnResizePolicy>
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                </columnResizePolicy>
+            </TableView>
+
+        </VBox>
+    </center>
+
+    <!-- Bottom Status Bar -->
+    <bottom>
+        <HBox styleClass="status-bar" alignment="CENTER_LEFT" spacing="10.0">
+            <padding>
+                <Insets bottom="5.0" left="10.0" right="10.0" top="5.0" />
+            </padding>
+            <Label fx:id="statusLabel" text="Ready"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="lastUpdateLabel" text="Last updated: Never"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>
