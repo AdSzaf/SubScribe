@@ -26,7 +26,35 @@ public class DatabaseManager {
     }
 
     private void createTables() throws SQLException {
-        // SQL table creation logic
+        String createSubscriptionsTable = """
+        CREATE TABLE IF NOT EXISTS subscriptions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            cost REAL NOT NULL,
+            currency TEXT NOT NULL,
+            start_date TEXT,
+            next_payment_date TEXT,
+            billing_cycle INTEGER,
+            category TEXT,
+            active INTEGER,
+            description TEXT,
+            website TEXT
+        );
+    """;
+
+    String createRemindersTable = """
+        CREATE TABLE IF NOT EXISTS reminders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            subscription_id INTEGER,
+            remind_days_before INTEGER,
+            FOREIGN KEY(subscription_id) REFERENCES subscriptions(id)
+        );
+    """;
+
+    try (var stmt = connection.createStatement()) {
+        stmt.execute(createSubscriptionsTable);
+        stmt.execute(createRemindersTable);
+    }
     }
 
     public Connection getConnection() {

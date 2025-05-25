@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<AnchorPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.subscribe.controllers.AddSubscriptionController"
+            prefHeight="400.0" prefWidth="600.0">
+    <VBox spacing="10.0" AnchorPane.leftAnchor="20" AnchorPane.rightAnchor="20" AnchorPane.topAnchor="20" AnchorPane.bottomAnchor="20">
+        <TextField fx:id="nameField" promptText="Name"/>
+        <TextField fx:id="costField" promptText="Cost"/>
+        <TextField fx:id="currencyField" promptText="Currency"/>
+        <ComboBox fx:id="categoryCombo" promptText="Category"/>
+        <DatePicker fx:id="startDatePicker" promptText="Start Date"/>
+        <DatePicker fx:id="nextPaymentDatePicker" promptText="Next Payment Date"/>
+        <TextField fx:id="billingCycleField" promptText="Billing Cycle (days)"/>
+        <CheckBox fx:id="activeCheckBox" text="Active"/>
+        <TextArea fx:id="descriptionArea" promptText="Description"/>
+        <TextField fx:id="websiteField" promptText="Website"/>
+        <HBox spacing="10">
+            <Button fx:id="saveBtn" text="Save" onAction="#saveSubscription"/>
+            <Button fx:id="cancelBtn" text="Cancel" onAction="#cancel"/>
+        </HBox>
+    </VBox>
+</AnchorPane>

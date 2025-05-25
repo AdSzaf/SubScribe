@@ -202,7 +202,7 @@ public class MainController implements Initializable {
     @FXML
     private void addSubscription() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/add-subscription.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/subscribe/fxml/add-subscription.fxml"));
             Scene scene = new Scene(loader.load());
 
             Stage stage = new Stage();
@@ -325,6 +325,21 @@ public class MainController implements Initializable {
     private void loadSubscriptions() {
         updateStatus("Loading subscriptions...");
 
+            subscriptionService.getAllSubscriptionsAsync().thenAccept(subscriptions -> {
+            Platform.runLater(() -> {
+                subscriptionsList.clear();
+                subscriptionsList.addAll(subscriptions);
+                updateSummaryCards();
+                updateStatus("Loaded " + subscriptions.size() + " subscriptions");
+            });
+        }).exceptionally(ex -> {
+            Platform.runLater(() -> {
+                updateStatus("Failed to load subscriptions");
+                showAlert("Error", "Failed to load subscriptions: " + ex.getMessage());
+            });
+            return null;
+        });
+
         // Create background task to load subscriptions
         Task<List<Subscription>> loadTask = new Task<List<Subscription>>() {
             @Override
@@ -336,7 +351,8 @@ public class MainController implements Initializable {
                 // return subscriptionService.getAllSubscriptions();
 
                 // For now, return sample data
-                return createSampleData();
+               // return createSampleData();
+               return subscriptionService.getAllSubscriptions();
             }
 
             @Override
@@ -364,45 +380,45 @@ public class MainController implements Initializable {
         loadThread.start();
     }
 
-    private List<Subscription> createSampleData() {
-        List<Subscription> samples = new ArrayList<>();
+    // private List<Subscription> createSampleData() {
+    //     List<Subscription> samples = new ArrayList<>();
 
-        // Create sample subscriptions
-        Subscription netflix = new Subscription();
-        netflix.setId(1L);
-        netflix.setName("Netflix");
-        netflix.setCost(new BigDecimal("15.99"));
-        netflix.setCurrency("USD");
-        netflix.setCategory(Category.ENTERTAINMENT);
-        netflix.setStartDate(LocalDate.now().minusMonths(6));
-        netflix.setNextPaymentDate(LocalDate.now().plusDays(5));
-        netflix.setActive(true);
-        samples.add(netflix);
+    //     // Create sample subscriptions
+    //     Subscription netflix = new Subscription();
+    //     netflix.setId(1L);
+    //     netflix.setName("Netflix");
+    //     netflix.setCost(new BigDecimal("15.99"));
+    //     netflix.setCurrency("USD");
+    //     netflix.setCategory(Category.ENTERTAINMENT);
+    //     netflix.setStartDate(LocalDate.now().minusMonths(6));
+    //     netflix.setNextPaymentDate(LocalDate.now().plusDays(5));
+    //     netflix.setActive(true);
+    //     samples.add(netflix);
 
-        Subscription spotify = new Subscription();
-        spotify.setId(2L);
-        spotify.setName("Spotify Premium");
-        spotify.setCost(new BigDecimal("9.99"));
-        spotify.setCurrency("USD");
-        spotify.setCategory(Category.ENTERTAINMENT);
-        spotify.setStartDate(LocalDate.now().minusMonths(12));
-        spotify.setNextPaymentDate(LocalDate.now().plusDays(15));
-        spotify.setActive(true);
-        samples.add(spotify);
+    //     Subscription spotify = new Subscription();
+    //     spotify.setId(2L);
+    //     spotify.setName("Spotify Premium");
+    //     spotify.setCost(new BigDecimal("9.99"));
+    //     spotify.setCurrency("USD");
+    //     spotify.setCategory(Category.ENTERTAINMENT);
+    //     spotify.setStartDate(LocalDate.now().minusMonths(12));
+    //     spotify.setNextPaymentDate(LocalDate.now().plusDays(15));
+    //     spotify.setActive(true);
+    //     samples.add(spotify);
 
-        Subscription office = new Subscription();
-        office.setId(3L);
-        office.setName("Microsoft Office 365");
-        office.setCost(new BigDecimal("6.99"));
-        office.setCurrency("USD");
-        office.setCategory(Category.PRODUCTIVITY);
-        office.setStartDate(LocalDate.now().minusMonths(3));
-        office.setNextPaymentDate(LocalDate.now().plusDays(25));
-        office.setActive(true);
-        samples.add(office);
+    //     Subscription office = new Subscription();
+    //     office.setId(3L);
+    //     office.setName("Microsoft Office 365");
+    //     office.setCost(new BigDecimal("6.99"));
+    //     office.setCurrency("USD");
+    //     office.setCategory(Category.PRODUCTIVITY);
+    //     office.setStartDate(LocalDate.now().minusMonths(3));
+    //     office.setNextPaymentDate(LocalDate.now().plusDays(25));
+    //     office.setActive(true);
+    //     samples.add(office);
 
-        return samples;
-    }
+    //     return samples;
+    // }
 
     private void updateSummaryCards() {
         BigDecimal totalMonthlyCost = BigDecimal.ZERO;
@@ -447,8 +463,8 @@ public class MainController implements Initializable {
 
         confirmAlert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                subscriptionsList.remove(subscription);
-                updateSummaryCards();
+                subscriptionService.deleteSubscription(subscription.getId());
+                loadSubscriptions();
                 updateStatus("Deleted subscription: " + subscription.getName());
             }
         });
@@ -459,8 +475,8 @@ public class MainController implements Initializable {
     @Subscribe
     public void onSubscriptionAdded(SubscriptionAddedEvent event) {
         Platform.runLater(() -> {
-            subscriptionsList.add(event.getSubscription());
-            updateSummaryCards();
+            subscriptionService.addSubscription(event.getSubscription());
+            loadSubscriptions();
             updateStatus("Added new subscription: " + event.getSubscription().getName());
         });
     }
