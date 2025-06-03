@@ -22,6 +22,8 @@ import com.example.subscribe.services.SubscriptionService;
 import com.example.subscribe.events.EventBusManager;
 import com.example.subscribe.events.SubscriptionAddedEvent;
 import com.google.common.eventbus.Subscribe;
+import com.example.subscribe.events.SubscriptionUpdatedEvent;
+import com.example.subscribe.events.PaymentDueEvent;
 
 import java.io.IOException;
 import java.net.URL;
@@ -268,7 +270,7 @@ public class MainController implements Initializable {
     @FXML
     private void openSettings() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/settings.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/subscribe/fxml/settings.fxml"));
             Scene scene = new Scene(loader.load());
 
             Stage stage = new Stage();
@@ -380,46 +382,6 @@ public class MainController implements Initializable {
         loadThread.start();
     }
 
-    // private List<Subscription> createSampleData() {
-    //     List<Subscription> samples = new ArrayList<>();
-
-    //     // Create sample subscriptions
-    //     Subscription netflix = new Subscription();
-    //     netflix.setId(1L);
-    //     netflix.setName("Netflix");
-    //     netflix.setCost(new BigDecimal("15.99"));
-    //     netflix.setCurrency("USD");
-    //     netflix.setCategory(Category.ENTERTAINMENT);
-    //     netflix.setStartDate(LocalDate.now().minusMonths(6));
-    //     netflix.setNextPaymentDate(LocalDate.now().plusDays(5));
-    //     netflix.setActive(true);
-    //     samples.add(netflix);
-
-    //     Subscription spotify = new Subscription();
-    //     spotify.setId(2L);
-    //     spotify.setName("Spotify Premium");
-    //     spotify.setCost(new BigDecimal("9.99"));
-    //     spotify.setCurrency("USD");
-    //     spotify.setCategory(Category.ENTERTAINMENT);
-    //     spotify.setStartDate(LocalDate.now().minusMonths(12));
-    //     spotify.setNextPaymentDate(LocalDate.now().plusDays(15));
-    //     spotify.setActive(true);
-    //     samples.add(spotify);
-
-    //     Subscription office = new Subscription();
-    //     office.setId(3L);
-    //     office.setName("Microsoft Office 365");
-    //     office.setCost(new BigDecimal("6.99"));
-    //     office.setCurrency("USD");
-    //     office.setCategory(Category.PRODUCTIVITY);
-    //     office.setStartDate(LocalDate.now().minusMonths(3));
-    //     office.setNextPaymentDate(LocalDate.now().plusDays(25));
-    //     office.setActive(true);
-    //     samples.add(office);
-
-    //     return samples;
-    // }
-
     private void updateSummaryCards() {
         BigDecimal totalMonthlyCost = BigDecimal.ZERO;
         int activeCount = 0;
@@ -447,10 +409,25 @@ public class MainController implements Initializable {
     }
 
     private void editSubscription(Subscription subscription) {
-        if (subscription == null) return;
+    if (subscription == null) return;
 
-        // TODO: Open edit dialog
-        showAlert("Info", "Edit functionality for '" + subscription.getName() + "' will be implemented soon!");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/subscribe/fxml/edit-subscription.fxml"));
+            Scene scene = new Scene(loader.load());
+
+            EditSubscriptionController controller = loader.getController();
+            controller.setSubscription(subscription);
+
+            Stage stage = new Stage();
+            stage.setTitle("Edit Subscription");
+            stage.setScene(scene);
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.initOwner(addSubscriptionBtn.getScene().getWindow());
+            stage.showAndWait();
+
+        } catch (IOException e) {
+            showAlert("Error", "Could not open Edit Subscription dialog: " + e.getMessage());
+        }
     }
 
     private void deleteSubscription(Subscription subscription) {
@@ -497,5 +474,22 @@ public class MainController implements Initializable {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+    @Subscribe
+    public void onSubscriptionUpdated(SubscriptionUpdatedEvent event) {
+        Platform.runLater(() -> {
+            subscriptionService.updateSubscription(event.getSubscription());
+            loadSubscriptions();
+            updateStatus("Updated subscription: " + event.getSubscription().getName());
+        });
+    }
+    @Subscribe
+    public void onPaymentDue(PaymentDueEvent event) {
+        Platform.runLater(() -> {
+            Subscription sub = event.getSubscription();
+            showAlert("Payment Due Soon",
+                "Subscription \"" + sub.getName() + "\" is due on " +
+                (sub.getNextPaymentDate() != null ? sub.getNextPaymentDate().toString() : "unknown") + "!");
+        });
     }
 }

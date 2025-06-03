@@ -2,10 +2,10 @@ package com.example.subscribe.events;
 
 import com.example.subscribe.models.Subscription;
 
-public class PaymentDueEvent {
+public class SubscriptionUpdatedEvent {
     private final Subscription subscription;
 
-    public PaymentDueEvent(Subscription subscription) {
+    public SubscriptionUpdatedEvent(Subscription subscription) {
         this.subscription = subscription;
     }
 

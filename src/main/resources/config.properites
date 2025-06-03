@@ -1,9 +1,0 @@
-
-app.currency=USD
-app.language=en
-reminder.days.before=3
-notification.email.enabled=true
-notification.app.enabled=true
-api.currency.url=https://api.exchangerate-api.com/v4/latest/USD
-api.paypal.enabled=false
-database.path=subscriptions.db

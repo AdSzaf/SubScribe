@@ -8,7 +8,25 @@
 
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.example.subscribe.fxml.Settings"
-            prefHeight="400.0" prefWidth="600.0">
-
+            fx:controller="com.example.subscribe.controllers.SettingsController"
+            prefHeight="250.0" prefWidth="400.0">
+    <VBox spacing="15.0" AnchorPane.leftAnchor="20" AnchorPane.rightAnchor="20" AnchorPane.topAnchor="20" AnchorPane.bottomAnchor="20">
+        <Label text="Settings" style="-fx-font-size: 18px;"/>
+        <HBox spacing="10">
+            <Label text="Currency:"/>
+            <TextField fx:id="currencyField" promptText="e.g. USD"/>
+        </HBox>
+        <HBox spacing="10">
+            <Label text="Language:"/>
+            <TextField fx:id="languageField" promptText="e.g. en"/>
+        </HBox>
+        <HBox spacing="10">
+            <Label text="Reminder Days Before:"/>
+            <TextField fx:id="reminderDaysField" promptText="e.g. 3"/>
+        </HBox>
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <Button text="Save" fx:id="saveBtn" onAction="#saveSettings"/>
+            <Button text="Cancel" onAction="#cancel"/>
+        </HBox>
+    </VBox>
 </AnchorPane>

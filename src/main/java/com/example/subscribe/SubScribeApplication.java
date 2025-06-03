@@ -7,10 +7,12 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import com.example.subscribe.database.DatabaseManager;
 import com.example.subscribe.events.EventBusManager;
+import com.example.subscribe.services.ReminderService;
 import com.example.subscribe.utils.ConfigManager;
+import com.example.subscribe.services.ReminderService;
 
 public class SubScribeApplication extends Application {
-
+    private ReminderService reminderService;
     @Override
     public void start(Stage stage) throws Exception {
         // Initialize configuration
@@ -21,6 +23,10 @@ public class SubScribeApplication extends Application {
 
         // Initialize event bus
         EventBusManager.getInstance();
+
+        reminderService = new ReminderService();
+        reminderService.start();
+
 
         // Load main FXML
         FXMLLoader fxmlLoader = new FXMLLoader(
@@ -38,5 +44,12 @@ public class SubScribeApplication extends Application {
 
     public static void main(String[] args) {
         launch();
+    }
+    @Override
+    public void stop() throws Exception {
+        if (reminderService != null) {
+            reminderService.stop();
+        }
+        super.stop();
     }
 }
