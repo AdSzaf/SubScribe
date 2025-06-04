@@ -92,6 +92,11 @@
           <artifactId>guava</artifactId>
           <version>25.1-android</version>
       </dependency>
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+      <version>20240303</version>
+    </dependency>
 
   </dependencies>
 

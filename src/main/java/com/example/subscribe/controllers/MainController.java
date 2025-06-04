@@ -18,22 +18,32 @@ import javafx.application.Platform;
 
 import com.example.subscribe.models.Subscription;
 import com.example.subscribe.models.Category;
+import com.example.subscribe.services.CurrencyService;
+import com.example.subscribe.services.PaymentApiService;
 import com.example.subscribe.services.SubscriptionService;
+import com.example.subscribe.utils.ConfigManager;
+import com.example.subscribe.utils.ICalendarExporter;
+import com.example.subscribe.events.CurrencyChangedEvent;
 import com.example.subscribe.events.EventBusManager;
 import com.example.subscribe.events.SubscriptionAddedEvent;
 import com.google.common.eventbus.Subscribe;
 import com.example.subscribe.events.SubscriptionUpdatedEvent;
 import com.example.subscribe.events.PaymentDueEvent;
+import com.example.subscribe.events.CurrencyChangedEvent;
 
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MainController implements Initializable {
 
@@ -64,6 +74,10 @@ public class MainController implements Initializable {
     private FilteredList<Subscription> filteredSubscriptions;
     private SubscriptionService subscriptionService;
 
+    private BigDecimal currentExchangeRate = BigDecimal.ONE;
+    private String targetCurrency = "PLN"; 
+    private Map<String, BigDecimal> exchangeRates = new HashMap<>();
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Initialize services
@@ -75,6 +89,19 @@ public class MainController implements Initializable {
         // Initialize data collections
         subscriptionsList = FXCollections.observableArrayList();
         filteredSubscriptions = new FilteredList<>(subscriptionsList);
+
+        PaymentApiService paymentApiService = new PaymentApiService();
+        paymentApiService.fetchTransactionsAsync().thenAccept(transactions -> {
+            Platform.runLater(() -> {
+                showAlert("Fetched Transactions", "Fetched " + transactions.size() + " transactions from PayPal/Stripe (mock).");
+            });
+        });
+
+        // Fetch exchange rate asynchronously
+        String baseCurrency = ConfigManager.get("currency.base", "USD");
+        targetCurrency = ConfigManager.get("app.currency", "PLN");
+
+        fetchAndUpdateExchangeRate();
 
         // Setup UI components
         setupTableColumns();
@@ -199,7 +226,7 @@ public class MainController implements Initializable {
         });
     }
 
-    // Event Handlers
+    // ---------------------------------------------------------------------------FXML------------------------------------------------------------------
 
     @FXML
     private void addSubscription() {
@@ -322,7 +349,38 @@ public class MainController implements Initializable {
                         "Built with JavaFX");
     }
 
-    // Business Logic Methods
+    @FXML
+    private void exportPaymentsToCalendar() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Export Payments to Calendar");
+        fileChooser.setInitialFileName("subscriptions.ics");
+        fileChooser.getExtensionFilters().add(
+            new FileChooser.ExtensionFilter("iCalendar Files", "*.ics")
+        );
+        Stage stage = (Stage) addSubscriptionBtn.getScene().getWindow();
+        var file = fileChooser.showSaveDialog(stage);
+
+        if (file != null) {
+            Task<Void> exportTask = new Task<>() {
+                @Override
+                protected Void call() {
+                    try {
+                        ICalendarExporter.exportSubscriptionsToICS(subscriptionsList, file.getAbsolutePath());
+                        EventBusManager.getInstance().post(new com.example.subscribe.events.CalendarExportedEvent(true, "Calendar exported successfully!"));
+                    } catch (IOException e) {
+                        EventBusManager.getInstance().post(new com.example.subscribe.events.CalendarExportedEvent(false, "Failed to export calendar: " + e.getMessage()));
+                    }
+                    return null;
+                }
+            };
+            Thread thread = new Thread(exportTask);
+            thread.setDaemon(true);
+            thread.start();
+        }
+    }
+
+
+    // -----------------------------------------------------------------------------Business Logic Methods--------------------------------------------------------------------
 
     private void loadSubscriptions() {
         updateStatus("Loading subscriptions...");
@@ -331,7 +389,7 @@ public class MainController implements Initializable {
             Platform.runLater(() -> {
                 subscriptionsList.clear();
                 subscriptionsList.addAll(subscriptions);
-                updateSummaryCards();
+                updateAllExchangeRatesAndSummary(); // <-- instead of updateSummaryCards()
                 updateStatus("Loaded " + subscriptions.size() + " subscriptions");
             });
         }).exceptionally(ex -> {
@@ -362,7 +420,7 @@ public class MainController implements Initializable {
                 Platform.runLater(() -> {
                     subscriptionsList.clear();
                     subscriptionsList.addAll(getValue());
-                    updateSummaryCards();
+                    updateAllExchangeRatesAndSummary();
                     updateStatus("Loaded " + getValue().size() + " subscriptions");
                 });
             }
@@ -386,16 +444,17 @@ public class MainController implements Initializable {
         BigDecimal totalMonthlyCost = BigDecimal.ZERO;
         int activeCount = 0;
         int dueThisWeek = 0;
-
         LocalDate oneWeekFromNow = LocalDate.now().plusWeeks(1);
 
         for (Subscription sub : filteredSubscriptions) {
             if (sub.isActive()) {
                 activeCount++;
                 if (sub.getCost() != null) {
-                    totalMonthlyCost = totalMonthlyCost.add(sub.getCost());
+                    BigDecimal rate = sub.getCurrency().equals(targetCurrency)
+                        ? BigDecimal.ONE
+                        : exchangeRates.getOrDefault(sub.getCurrency(), BigDecimal.ONE);
+                    totalMonthlyCost = totalMonthlyCost.add(sub.getCost().multiply(rate));
                 }
-
                 if (sub.getNextPaymentDate() != null &&
                         sub.getNextPaymentDate().isBefore(oneWeekFromNow)) {
                     dueThisWeek++;
@@ -403,7 +462,7 @@ public class MainController implements Initializable {
             }
         }
 
-        totalMonthlyCostLabel.setText("$" + totalMonthlyCost.toString());
+        totalMonthlyCostLabel.setText(targetCurrency + " " + totalMonthlyCost.toString());
         activeSubscriptionsLabel.setText(String.valueOf(activeCount));
         dueThisWeekLabel.setText(String.valueOf(dueThisWeek));
     }
@@ -447,17 +506,55 @@ public class MainController implements Initializable {
         });
     }
 
-    // Event Bus Subscribers
+    //Currency Exchange Rate Fetching
+    private void fetchAndUpdateExchangeRate() {
+        String baseCurrency = "USD"; // or ConfigManager.get("currency.base", "USD");
+        targetCurrency = ConfigManager.get("app.currency", "PLN");
 
-    @Subscribe
-    public void onSubscriptionAdded(SubscriptionAddedEvent event) {
-        Platform.runLater(() -> {
-            subscriptionService.addSubscription(event.getSubscription());
-            loadSubscriptions();
-            updateStatus("Added new subscription: " + event.getSubscription().getName());
-        });
+        if (baseCurrency.equals(targetCurrency)) {
+            currentExchangeRate = BigDecimal.ONE;
+            updateStatus("Using same currency for base and target: " + baseCurrency);
+            updateSummaryCards();
+        } else {
+            updateStatus("Fetching exchange rate from " + baseCurrency + " to " + targetCurrency);
+            CurrencyService currencyService = new CurrencyService();
+            currencyService.getExchangeRateAsync(baseCurrency, targetCurrency).thenAccept(rate -> {
+                currentExchangeRate = rate;
+                Platform.runLater(() -> {
+                    showAlert("Exchange Rate", baseCurrency + "/" + targetCurrency + " = " + rate);
+                    updateSummaryCards();
+                });
+            }).exceptionally(ex -> {
+                Platform.runLater(() -> showAlert("Error", "Failed to fetch exchange rate: " + ex.getMessage()));
+                return null;
+            });
+        }
     }
+    private void updateAllExchangeRatesAndSummary() {
+         targetCurrency = ConfigManager.get("app.currency", "PLN");
 
+        Set<String> currencies = subscriptionsList.stream()
+            .map(Subscription::getCurrency)
+            .filter(c -> c != null && !c.equals(targetCurrency))
+            .collect(Collectors.toSet());
+
+        CurrencyService currencyService = new CurrencyService();
+
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        for (String currency : currencies) {
+            futures.add(currencyService.getExchangeRateAsync(currency, targetCurrency)
+                .thenAccept(rate -> exchangeRates.put(currency, rate))
+                .exceptionally(ex -> {
+                    exchangeRates.put(currency, BigDecimal.ONE); // fallback
+                    return null;
+                }));
+        }
+
+        // When all rates are fetched, update summary
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenRun(() ->
+            Platform.runLater(this::updateSummaryCards)
+        );
+    }
     // Utility Methods
 
     private void updateStatus(String message) {
@@ -475,6 +572,19 @@ public class MainController implements Initializable {
         alert.setContentText(message);
         alert.showAndWait();
     }
+
+    // ---------------------------------------------------------------------Event Bus Subscribers-------------------------------------------------------------------------------
+
+    @Subscribe
+    public void onSubscriptionAdded(SubscriptionAddedEvent event) {
+        Platform.runLater(() -> {
+            subscriptionService.addSubscription(event.getSubscription());
+            loadSubscriptions();
+            updateStatus("Added new subscription: " + event.getSubscription().getName());
+        });
+    }
+
+    
     @Subscribe
     public void onSubscriptionUpdated(SubscriptionUpdatedEvent event) {
         Platform.runLater(() -> {
@@ -491,5 +601,13 @@ public class MainController implements Initializable {
                 "Subscription \"" + sub.getName() + "\" is due on " +
                 (sub.getNextPaymentDate() != null ? sub.getNextPaymentDate().toString() : "unknown") + "!");
         });
+    }
+    @Subscribe
+    public void onCurrencyChanged(CurrencyChangedEvent event) {
+        Platform.runLater(this::updateAllExchangeRatesAndSummary);
+    }
+    @Subscribe
+    public void onCalendarExported(com.example.subscribe.events.CalendarExportedEvent event) {
+        Platform.runLater(() -> showAlert(event.isSuccess() ? "Success" : "Error", event.getMessage()));
     }
 }

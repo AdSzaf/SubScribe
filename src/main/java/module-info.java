@@ -3,6 +3,8 @@ module com.example.subscribe {
     requires javafx.fxml;
     requires java.sql;
     requires com.google.common;
+    requires java.net.http;
+    requires org.json;
 
 
     exports com.example.subscribe;

@@ -5,6 +5,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 import com.example.subscribe.utils.ConfigManager;
+import com.example.subscribe.events.CurrencyChangedEvent;
+import com.example.subscribe.events.EventBusManager;
 
 public class SettingsController {
     @FXML private TextField currencyField;
@@ -24,6 +26,7 @@ public class SettingsController {
         ConfigManager.set("app.language", languageField.getText());
         ConfigManager.set("reminder.days.before", reminderDaysField.getText());
         ConfigManager.saveConfig();
+        EventBusManager.getInstance().post(new CurrencyChangedEvent());
         showAlert("Settings Saved", "Settings have been saved successfully.");
         close();
     }
