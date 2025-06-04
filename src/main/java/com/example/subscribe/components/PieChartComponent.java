@@ -18,6 +18,9 @@ public class PieChartComponent extends VBox {
     }
 
     public void updateData(Map<String, Double> categoryExpenses) {
-        // Update pie chart data
+        pieChart.getData().clear();
+        for (Map.Entry<String, Double> entry : categoryExpenses.entrySet()) {
+            pieChart.getData().add(new PieChart.Data(entry.getKey(), entry.getValue()));
+        }
     }
 }

@@ -11,6 +11,8 @@ module com.example.subscribe {
     exports com.example.subscribe.controllers to javafx.fxml;
     exports com.example.subscribe.models;
     exports com.example.subscribe.events to com.google.common;
+    exports com.example.subscribe.components;
+    exports com.example.subscribe.utils;
 
     opens com.example.subscribe to javafx.fxml;
     opens com.example.subscribe.controllers to javafx.fxml,com.google.common;

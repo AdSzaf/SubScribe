@@ -315,8 +315,11 @@ public class MainController implements Initializable {
     @FXML
     private void openStatistics() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/statistics.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/subscribe/fxml/statistics.fxml"));
             Scene scene = new Scene(loader.load());
+
+            StatisticsController controller = loader.getController();
+            controller.setSubscriptions(subscriptionsList);
 
             Stage stage = new Stage();
             stage.setTitle("Statistics");
@@ -332,8 +335,23 @@ public class MainController implements Initializable {
 
     @FXML
     private void openCalendarView() {
-        // TODO: Implement calendar view
-        showAlert("Info", "Calendar view will be implemented soon!");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/subscribe/fxml/calendar-view.fxml"));
+            Scene scene = new Scene(loader.load());
+
+            CalendarViewController controller = loader.getController();
+            controller.setSubscriptions(subscriptionsList);
+
+            Stage stage = new Stage();
+            stage.setTitle("Calendar View");
+            stage.setScene(scene);
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.initOwner(addSubscriptionBtn.getScene().getWindow());
+            stage.showAndWait();
+
+        } catch (IOException e) {
+            showAlert("Error", "Could not open Calendar view: " + e.getMessage());
+        }
     }
 
     @FXML
