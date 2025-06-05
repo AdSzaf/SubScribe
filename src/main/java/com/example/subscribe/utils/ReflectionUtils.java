@@ -8,17 +8,32 @@ public class ReflectionUtils {
     public static List<Category> loadAllCategories() {
         List<Category> categories = new ArrayList<>();
         try {
-            // List all known category class names here or scan the package if using a library
             String[] categoryClassNames = {
-                "com.example.subscribe.models.EntertainmentCategory",
-                "com.example.subscribe.models.UtilitiesCategory"
-                // Add more as needed
+                "com.example.subscribe.models.Categories.EntertainmentCategory",
+                "com.example.subscribe.models.Categories.ProductivityCategory",
+                "com.example.subscribe.models.Categories.CloudStorageCategory",
+                "com.example.subscribe.models.Categories.SoftwareCategory",
+                "com.example.subscribe.models.Categories.MusicStreamingCategory",
+                "com.example.subscribe.models.Categories.VideoStreamingCategory",
+                "com.example.subscribe.models.Categories.NewsMediaCategory",
+                "com.example.subscribe.models.Categories.FitnessHealthCategory",
+                "com.example.subscribe.models.Categories.EducationCategory",
+                // "com.example.subscribe.models.GamingCategory",
+                // "com.example.subscribe.models.CommunicationCategory",
+                // "com.example.subscribe.models.BusinessCategory",
+                // "com.example.subscribe.models.UtilitiesCategory",
+                // "com.example.subscribe.models.FinanceCategory",
+                // "com.example.subscribe.models.ShoppingCategory",
+                // "com.example.subscribe.models.FoodDeliveryCategory",
+                // "com.example.subscribe.models.TransportationCategory",
+                // "com.example.subscribe.models.SecurityCategory",
+                // "com.example.subscribe.models.DesignCategory",
+                // "com.example.subscribe.models.DevelopmentCategory",
+                "com.example.subscribe.models.Categories.OtherCategory"
             };
             for (String className : categoryClassNames) {
                 Class<?> clazz = Class.forName(className);
-                if (Category.class.isAssignableFrom(clazz) && !Modifier.isAbstract(clazz.getModifiers())) {
-                    categories.add((Category) clazz.getDeclaredConstructor().newInstance());
-                }
+                categories.add((Category) clazz.getDeclaredConstructor().newInstance());
             }
         } catch (Exception e) {
             e.printStackTrace();

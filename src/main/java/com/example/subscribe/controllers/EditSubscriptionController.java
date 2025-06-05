@@ -34,7 +34,7 @@ public class EditSubscriptionController {
         nameField.setText(subscription.getName());
         costField.setText(subscription.getCost() != null ? subscription.getCost().toString() : "");
         currencyField.setText(subscription.getCurrency());
-        categoryCombo.getItems().addAll(Category.values());
+        categoryCombo.getItems().setAll(ReflectionUtils.loadAllCategories());
         categoryCombo.setValue(subscription.getCategory());
         startDatePicker.setValue(subscription.getStartDate());
         nextPaymentDatePicker.setValue(subscription.getNextPaymentDate());
@@ -46,15 +46,28 @@ public class EditSubscriptionController {
 
     @FXML
     private void initialize() {
-        categoryCombo.getItems().addAll(Category.values());
-        //categoryCombo.getItems().setAll(ReflectionUtils.loadAllCategories());
+        categoryCombo.getItems().setAll(ReflectionUtils.loadAllCategories());
     }
 
     @FXML
     private void saveSubscription() {
+        String name = nameField.getText();
+        String costText = costField.getText();
+        // Validate name
+        if (!com.example.subscribe.utils.ValidationUtils.isValidSubscriptionName(name)) {
+            showAlert("Validation Error", "Subscription name cannot be empty and must be at most 50 characters.");
+            return;
+        }
+        // Validate cost
         try {
-            subscription.setName(nameField.getText());
-            subscription.setCost(new BigDecimal(costField.getText()));
+            new java.math.BigDecimal(costText);
+        } catch (NumberFormatException e) {
+            showAlert("Validation Error", "Cost must be a valid number.");
+            return;
+        }
+        try {
+            subscription.setName(name);
+            subscription.setCost(new java.math.BigDecimal(costText));
             subscription.setCurrency(currencyField.getText());
             subscription.setCategory(categoryCombo.getValue());
             subscription.setStartDate(startDatePicker.getValue());

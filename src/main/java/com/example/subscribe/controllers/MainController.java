@@ -23,6 +23,7 @@ import com.example.subscribe.services.PaymentApiService;
 import com.example.subscribe.services.SubscriptionService;
 import com.example.subscribe.utils.ConfigManager;
 import com.example.subscribe.utils.ICalendarExporter;
+import com.example.subscribe.utils.ReflectionUtils;
 import com.example.subscribe.events.CurrencyChangedEvent;
 import com.example.subscribe.events.EventBusManager;
 import com.example.subscribe.events.SubscriptionAddedEvent;
@@ -101,6 +102,14 @@ public class MainController implements Initializable {
         String baseCurrency = ConfigManager.get("currency.base", "USD");
         targetCurrency = ConfigManager.get("app.currency", "PLN");
 
+        // Add listeners for realtime filtering
+        searchField.textProperty().addListener((obs, oldVal, newVal) -> filteredSubscriptions.setPredicate(this::filterPredicate));
+        categoryFilter.valueProperty().addListener((obs, oldVal, newVal) -> filteredSubscriptions.setPredicate(this::filterPredicate));
+        statusFilter.valueProperty().addListener((obs, oldVal, newVal) -> filteredSubscriptions.setPredicate(this::filterPredicate));
+
+        // Set initial predicate
+        filteredSubscriptions.setPredicate(this::filterPredicate);
+
         fetchAndUpdateExchangeRate();
 
         // Setup UI components
@@ -178,7 +187,7 @@ public class MainController implements Initializable {
 
     private void setupFilters() {
         // Setup category filter
-        categoryFilter.getItems().addAll(Category.values());
+        categoryFilter.getItems().setAll(ReflectionUtils.loadAllCategories());
         categoryFilter.getItems().add(0, null); // "All categories" option
         categoryFilter.setConverter(new javafx.util.StringConverter<Category>() {
             @Override
@@ -224,6 +233,37 @@ public class MainController implements Initializable {
 
             return true;
         });
+    }
+    // Filtering logic as a method for reuse
+    private boolean filterPredicate(Subscription subscription) {
+        // Search filter
+        String searchText = searchField.getText();
+        if (searchText != null && !searchText.isEmpty()) {
+            String lowerCaseFilter = searchText.toLowerCase();
+            if (!subscription.getName().toLowerCase().contains(lowerCaseFilter)) {
+                return false;
+            }
+        }
+
+        // Category filter (compare by class)
+        Category selectedCategory = categoryFilter.getValue();
+        if (selectedCategory != null) {
+            Category subCategory = subscription.getCategory();
+            if (subCategory == null || !subCategory.getClass().equals(selectedCategory.getClass())) {
+                return false;
+            }
+        }
+
+        // Status filter
+        String selectedStatus = statusFilter.getValue();
+        if (!"All".equals(selectedStatus)) {
+            boolean isActive = "Active".equals(selectedStatus);
+            if (subscription.isActive() != isActive) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     // ---------------------------------------------------------------------------FXML------------------------------------------------------------------

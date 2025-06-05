@@ -29,20 +29,35 @@ public class AddSubscriptionController {
 
     @FXML
     private void initialize() {
-        categoryCombo.getItems().addAll(Category.values());
-        //categoryCombo.getItems().setAll(ReflectionUtils.loadAllCategories());
+        categoryCombo.getItems().setAll(ReflectionUtils.loadAllCategories());
         currencyField.setText(ConfigManager.get("app.currency", "USD"));
         startDatePicker.setValue(LocalDate.now());
         nextPaymentDatePicker.setValue(LocalDate.now().plusMonths(1));
         activeCheckBox.setSelected(true);
     }
+    
 
     @FXML
     private void saveSubscription() {
+        String name = nameField.getText();
+        String costText = costField.getText();
+
+        // Validate name
+        if (!com.example.subscribe.utils.ValidationUtils.isValidSubscriptionName(name)) {
+            showAlert("Validation Error", "Subscription name cannot be empty and must be at most 50 characters.");
+            return;
+        }
+        // Validate cost
+        try {
+            new java.math.BigDecimal(costText);
+        } catch (NumberFormatException e) {
+            showAlert("Validation Error", "Cost must be a valid number.");
+            return;
+        }
         try {
             Subscription sub = new Subscription();
-            sub.setName(nameField.getText());
-            sub.setCost(new BigDecimal(costField.getText()));
+            sub.setName(name);
+            sub.setCost(new java.math.BigDecimal(costText));
             sub.setCurrency(currencyField.getText());
             sub.setCategory(categoryCombo.getValue());
             sub.setStartDate(startDatePicker.getValue());

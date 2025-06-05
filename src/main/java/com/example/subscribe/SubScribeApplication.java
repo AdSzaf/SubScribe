@@ -10,6 +10,7 @@ import com.example.subscribe.events.EventBusManager;
 import com.example.subscribe.services.ReminderService;
 import com.example.subscribe.utils.ConfigManager;
 import com.example.subscribe.services.ReminderService;
+import javafx.scene.image.Image;
 
 public class SubScribeApplication extends Application {
     private ReminderService reminderService;
@@ -37,6 +38,8 @@ public class SubScribeApplication extends Application {
                 getClass().getResource("/com/example/subscribe/css/application.css").toExternalForm()
         );
 
+        stage.getIcons().add(new Image(getClass().getResourceAsStream("/com/example/subscribe/images/icons/icon1.png")));
+        
         stage.setTitle("SubScribe - Subscription Manager");
         stage.setScene(scene);
         stage.show();

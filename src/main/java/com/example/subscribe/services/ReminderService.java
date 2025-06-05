@@ -16,7 +16,7 @@ public class ReminderService {
 
     public void start() {
         int reminderDays = Integer.parseInt(ConfigManager.get("reminder.days.before", "3"));
-        scheduler.scheduleAtFixedRate(() -> checkReminders(reminderDays), 0, 60, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(() -> checkReminders(reminderDays), 5, 60, TimeUnit.SECONDS);
     }
 
     private void checkReminders(int reminderDays) {

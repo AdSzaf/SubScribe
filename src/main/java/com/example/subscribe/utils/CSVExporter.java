@@ -1,5 +1,6 @@
 package com.example.subscribe.utils;
 
+import com.example.subscribe.models.Category;
 import com.example.subscribe.models.Subscription;
 import org.apache.commons.csv.*;
 
@@ -29,6 +30,7 @@ public class CSVExporter {
         try (Reader reader = new FileReader(filePath);
             CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader())) {
             for (CSVRecord record : csvParser) {
+                Category category = Category.fromDisplayName(record.get("Category"));
                 Subscription sub = new Subscription(
                     null,
                     record.get("Name"),
@@ -37,7 +39,7 @@ public class CSVExporter {
                     null,
                     java.time.LocalDate.parse(record.get("NextPaymentDate")),
                     30,
-                    null,
+                    category, // <-- use resolved category
                     true
                 );
                 imported.add(sub);
