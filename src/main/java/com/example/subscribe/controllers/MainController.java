@@ -20,6 +20,7 @@ import com.example.subscribe.models.Subscription;
 import com.example.subscribe.models.Category;
 import com.example.subscribe.services.CurrencyService;
 import com.example.subscribe.services.PaymentApiService;
+import com.example.subscribe.services.PublicHolidaysService;
 import com.example.subscribe.services.SubscriptionService;
 import com.example.subscribe.utils.ConfigManager;
 import com.example.subscribe.utils.ICalendarExporter;
@@ -30,7 +31,10 @@ import com.example.subscribe.events.SubscriptionAddedEvent;
 import com.google.common.eventbus.Subscribe;
 import com.example.subscribe.events.SubscriptionUpdatedEvent;
 import com.example.subscribe.events.PaymentDueEvent;
+import com.example.subscribe.events.PublicHolidaysFetchedEvent;
 import com.example.subscribe.events.CurrencyChangedEvent;
+import com.example.subscribe.events.LanguageChangedEvent;
+import com.example.subscribe.services.TranslationService;
 
 import java.io.IOException;
 import java.net.URL;
@@ -122,9 +126,13 @@ public class MainController implements Initializable {
         // Load initial data
         loadSubscriptions();
 
+        // String lang = ConfigManager.get("app.language", "en");
+        // EventBusManager.getInstance().post(new LanguageChangedEvent(lang));
+
         // Update status
         updateStatus("Application loaded successfully");
         updateLastUpdateTime();
+
     }
 
     private void setupTableColumns() {
@@ -431,11 +439,18 @@ public class MainController implements Initializable {
             CalendarViewController controller = loader.getController();
             controller.setSubscriptions(subscriptionsList);
 
+            String lang = ConfigManager.get("app.language", "en");
+            EventBusManager.getInstance().post(new LanguageChangedEvent(lang));
+
             Stage stage = new Stage();
             stage.setTitle("Calendar View");
             stage.setScene(scene);
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(addSubscriptionBtn.getScene().getWindow());
+
+            // Unregister controller when window closes
+            stage.setOnHiding(e -> controller.onClose());
+
             stage.showAndWait();
 
         } catch (IOException e) {
@@ -716,5 +731,158 @@ public class MainController implements Initializable {
     @Subscribe
     public void onCalendarExported(com.example.subscribe.events.CalendarExportedEvent event) {
         Platform.runLater(() -> showAlert(event.isSuccess() ? "Success" : "Error", event.getMessage()));
+    }
+    @Subscribe
+    public void onLanguageChanged(LanguageChangedEvent event) {
+        String lang = event.getLanguage();
+        String countryCode = mapLanguageToCountry(lang); // e.g., "en" -> "US", "pl" -> "PL"
+        int year = java.time.LocalDate.now().getYear();
+
+        PublicHolidaysService holidaysService = new PublicHolidaysService();
+        holidaysService.fetchHolidays(year, countryCode).thenAccept(holidays -> {
+            EventBusManager.getInstance().post(new PublicHolidaysFetchedEvent(holidays));
+        });
+
+        // ... (your translation code if needed)
+    }
+
+    private String mapLanguageToCountry(String lang) {
+        return switch (lang) {
+            case "al" -> "AL";
+            case "ad" -> "AD";
+            case "ar" -> "AR";
+            case "am" -> "AM";
+            case "au" -> "AU";
+            case "at" -> "AT";
+            case "bs" -> "BS";
+            case "bb" -> "BB";
+            case "by" -> "BY";
+            case "be" -> "BE";
+            case "bz" -> "BZ";
+            case "bj" -> "BJ";
+            case "bo" -> "BO";
+            case "ba" -> "BA";
+            case "bw" -> "BW";
+            case "br" -> "BR";
+            case "bg" -> "BG";
+            case "ca" -> "CA";
+            case "cl" -> "CL";
+            case "cn" -> "CN";
+            case "co" -> "CO";
+            case "cr" -> "CR";
+            case "hr" -> "HR";
+            case "cu" -> "CU";
+            case "cy" -> "CY";
+            case "cz" -> "CZ";
+            case "cd" -> "CD";
+            case "dk" -> "DK";
+            case "do" -> "DO";
+            case "ec" -> "EC";
+            case "eg" -> "EG";
+            case "sv" -> "SV";
+            case "ee" -> "EE";
+            case "fo" -> "FO";
+            case "fi" -> "FI";
+            case "fr" -> "FR";
+            case "ga" -> "GA";
+            case "gm" -> "GM";
+            case "ge" -> "GE";
+            case "de" -> "DE";
+            case "gi" -> "GI";
+            case "gr" -> "GR";
+            case "gl" -> "GL";
+            case "gd" -> "GD";
+            case "gt" -> "GT";
+            case "gg" -> "GG";
+            case "gy" -> "GY";
+            case "ht" -> "HT";
+            case "hn" -> "HN";
+            case "hk" -> "HK";
+            case "hu" -> "HU";
+            case "is" -> "IS";
+            case "id" -> "ID";
+            case "ie" -> "IE";
+            case "im" -> "IM";
+            case "it" -> "IT";
+            case "jm" -> "JM";
+            case "jp" -> "JP";
+            case "je" -> "JE";
+            case "kz" -> "KZ";
+            case "lv" -> "LV";
+            case "ls" -> "LS";
+            case "li" -> "LI";
+            case "lt" -> "LT";
+            case "lu" -> "LU";
+            case "mg" -> "MG";
+            case "mt" -> "MT";
+            case "mx" -> "MX";
+            case "md" -> "MD";
+            case "mc" -> "MC";
+            case "mn" -> "MN";
+            case "me" -> "ME";
+            case "ms" -> "MS";
+            case "ma" -> "MA";
+            case "mz" -> "MZ";
+            case "na" -> "NA";
+            case "nl" -> "NL";
+            case "nz" -> "NZ";
+            case "ni" -> "NI";
+            case "ne" -> "NE";
+            case "ng" -> "NG";
+            case "mk" -> "MK";
+            case "no" -> "NO";
+            case "pa" -> "PA";
+            case "pg" -> "PG";
+            case "py" -> "PY";
+            case "pe" -> "PE";
+            case "ph" -> "PH";
+            case "pl" -> "PL";
+            case "pt" -> "PT";
+            case "pr" -> "PR";
+            case "cg" -> "CG";
+            case "ro" -> "RO";
+            case "ru" -> "RU";
+            case "sm" -> "SM";
+            case "rs" -> "RS";
+            case "sg" -> "SG";
+            case "sk" -> "SK";
+            case "si" -> "SI";
+            case "za" -> "ZA";
+            case "kr" -> "KR";
+            case "es" -> "ES";
+            case "sr" -> "SR";
+            case "sj" -> "SJ";
+            case "se" -> "SE";
+            case "ch" -> "CH";
+            case "tn" -> "TN";
+            case "tr" -> "TR";
+            case "ua" -> "UA";
+            case "gb" -> "GB";
+            case "en" -> "US";
+            case "uy" -> "UY";
+            case "va" -> "VA";
+            case "ve" -> "VE";
+            case "vn" -> "VN";
+            case "zw" -> "ZW";
+            case "ax" -> "AX";
+            default -> "US";
+        };
+
+    }
+
+    @Subscribe
+    public void onPublicHolidaysFetched(PublicHolidaysFetchedEvent event) {
+        List<PublicHolidaysService.Holiday> holidays = event.getHolidays();
+        LocalDate today = LocalDate.now();
+        List<PublicHolidaysService.Holiday> upcoming = holidays.stream()
+            .filter(h -> LocalDate.parse(h.date).isAfter(today) || LocalDate.parse(h.date).isEqual(today))
+            .sorted((h1, h2) -> h1.date.compareTo(h2.date))
+            .collect(Collectors.toList());
+
+        Platform.runLater(() -> {
+            StringBuilder sb = new StringBuilder("Upcoming public holidays:\n");
+            upcoming.stream().limit(5).forEach(h -> sb.append(h.date).append(" - ").append(h.name).append("\n"));
+            showAlert("Public Holidays", sb.toString());
+        });
     }
 }

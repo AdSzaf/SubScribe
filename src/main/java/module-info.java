@@ -7,6 +7,7 @@ module com.example.subscribe {
     requires org.json;
     requires org.apache.commons.csv;
     requires org.apache.commons.lang3;
+    requires javafx.graphics;
 
 
     exports com.example.subscribe;

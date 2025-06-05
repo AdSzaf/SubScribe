@@ -2,15 +2,21 @@ package com.example.subscribe.components;
 
 import javafx.scene.layout.GridPane;
 import javafx.scene.control.Label;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 public class InteractiveCalendarComponent extends GridPane {
     private YearMonth currentMonth = YearMonth.now();
-    private List<LocalDate> paymentDates;
+    private Set<LocalDate> paymentDates = new HashSet<>();
+    private Set<LocalDate> holidayDates = new HashSet<>();
+    private java.util.function.Consumer<LocalDate> onDateSelected;
+
+    public void setOnDateSelected(java.util.function.Consumer<LocalDate> handler) {
+    this.onDateSelected = handler;
+}
 
     public InteractiveCalendarComponent() {
         setGridLinesVisible(true);
@@ -36,8 +42,16 @@ public class InteractiveCalendarComponent extends GridPane {
             Label label = new Label(String.valueOf(day));
             label.setPrefSize(40, 30); // Set cell size
             label.setStyle("-fx-alignment: center; -fx-border-color: #ccc; -fx-font-size: 14;");
-            if (paymentDates != null && paymentDates.contains(date)) {
+
+            boolean isPayment = paymentDates.contains(date);
+            boolean isHoliday = holidayDates.contains(date);
+
+            if (isPayment && isHoliday) {
+                label.setStyle(label.getStyle() + "-fx-background-color: orange; -fx-font-weight: bold;"); // Both
+            } else if (isPayment) {
                 label.setStyle(label.getStyle() + "-fx-background-color: yellow; -fx-font-weight: bold;");
+            } else if (isHoliday) {
+                label.setStyle(label.getStyle() + "-fx-background-color: #90caf9; -fx-font-weight: bold;");
             }
             add(label, col, row);
             col++;
@@ -45,15 +59,22 @@ public class InteractiveCalendarComponent extends GridPane {
                 col = 0;
                 row++;
             }
+            label.setOnMouseClicked(e -> {
+                if (onDateSelected != null) onDateSelected.accept(date);
+            });
         }
     }
 
     public void highlightPaymentDates(List<LocalDate> paymentDates) {
-        this.paymentDates = paymentDates;
+        this.paymentDates = new HashSet<>(paymentDates);
+        buildCalendar();
+    }
+    public void highlightHolidayDates(List<LocalDate> holidayDates) {
+        this.holidayDates = new HashSet<>(holidayDates);
         buildCalendar();
     }
     public void setMonth(YearMonth month) {
-    this.currentMonth = month;
-    buildCalendar();
-}
+        this.currentMonth = month;
+        buildCalendar();
+    }
 }
