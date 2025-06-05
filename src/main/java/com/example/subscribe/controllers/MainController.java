@@ -10,6 +10,8 @@ import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -73,6 +75,8 @@ public class MainController implements Initializable {
     @FXML private TableColumn<Subscription, String> actionsColumn;
 
     @FXML private Button addSubscriptionBtn;
+    @FXML
+    private ImageView logoImageView;
 
     // Data and Services
     private ObservableList<Subscription> subscriptionsList;
@@ -85,6 +89,14 @@ public class MainController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+
+        try {
+            Image image = new Image(getClass().getResourceAsStream("/com/example/subscribe/images/logo.png"));
+            logoImageView.setImage(image);
+        } catch (Exception e) {
+            System.err.println("Error loading image: " + e.getMessage());
+        }
+
         // Initialize services
         subscriptionService = new SubscriptionService();
 

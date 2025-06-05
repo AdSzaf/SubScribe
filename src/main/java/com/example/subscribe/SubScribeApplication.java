@@ -28,7 +28,6 @@ public class SubScribeApplication extends Application {
         reminderService = new ReminderService();
         reminderService.start();
 
-
         // Load main FXML
         FXMLLoader fxmlLoader = new FXMLLoader(
                 SubScribeApplication.class.getResource("/com/example/subscribe/fxml/main-view.fxml")
