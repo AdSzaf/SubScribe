@@ -260,23 +260,6 @@ public class MainController implements Initializable {
     }
 
     @FXML
-    private void importSubscriptions() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Import Subscriptions");
-        fileChooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("CSV Files", "*.csv")
-        );
-
-        Stage stage = (Stage) addSubscriptionBtn.getScene().getWindow();
-        var file = fileChooser.showOpenDialog(stage);
-
-        if (file != null) {
-            // TODO: Implement CSV import logic using Apache Commons CSV
-            showAlert("Info", "Import functionality will be implemented soon!");
-        }
-    }
-
-    @FXML
     private void exportSubscriptions() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Export Subscriptions");
@@ -289,10 +272,76 @@ public class MainController implements Initializable {
         var file = fileChooser.showSaveDialog(stage);
 
         if (file != null) {
-            // TODO: Implement CSV export logic using Apache Commons CSV
-            showAlert("Info", "Export functionality will be implemented soon!");
+            Task<Void> exportTask = new Task<>() {
+                @Override
+                protected Void call() {
+                    try {
+                        com.example.subscribe.utils.CSVExporter.exportToCSV(subscriptionsList, file.getAbsolutePath());
+                        Platform.runLater(() -> showAlert("Success", "Exported subscriptions to CSV."));
+                    } catch (IOException e) {
+                        Platform.runLater(() -> showAlert("Error", "Failed to export CSV: " + e.getMessage()));
+                    }
+                    return null;
+                }
+            };
+            Thread thread = new Thread(exportTask);
+            thread.setDaemon(true);
+            thread.start();
         }
     }
+
+    @FXML
+    private void importSubscriptions() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Import Subscriptions");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("CSV Files", "*.csv")
+        );
+
+        Stage stage = (Stage) addSubscriptionBtn.getScene().getWindow();
+        var file = fileChooser.showOpenDialog(stage);
+
+        if (file != null) {
+            Task<Void> importTask = new Task<>() {
+                @Override
+                protected Void call() {
+                    try {
+                        List<Subscription> imported = com.example.subscribe.utils.CSVExporter.importFromCSV(file.getAbsolutePath());
+                        SubscriptionService subscriptionService = new SubscriptionService();
+                        List<Subscription> current = subscriptionService.getAllSubscriptions();
+
+                        for (Subscription importedSub : imported) {
+                            // Try to find by name (or use another unique field)
+                            Subscription existing = current.stream()
+                                .filter(s -> s.getName().equalsIgnoreCase(importedSub.getName()))
+                                .findFirst()
+                                .orElse(null);
+
+                            if (existing != null) {
+                                // Update existing
+                                importedSub.setId(existing.getId());
+                                subscriptionService.updateSubscription(importedSub);
+                            } else {
+                                // Insert new
+                                subscriptionService.addSubscription(importedSub);
+                            }
+                        }
+
+                        Platform.runLater(() -> {
+                            loadSubscriptions();
+                            showAlert("Success", "Imported subscriptions from CSV.");
+                        });
+                    } catch (IOException e) {
+                        Platform.runLater(() -> showAlert("Error", "Failed to import CSV: " + e.getMessage()));
+                    }
+                    return null;
+                }
+            };
+            Thread thread = new Thread(importTask);
+            thread.setDaemon(true);
+            thread.start();
+        }
+}
 
     @FXML
     private void openSettings() {

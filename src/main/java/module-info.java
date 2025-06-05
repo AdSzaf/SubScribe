@@ -5,6 +5,8 @@ module com.example.subscribe {
     requires com.google.common;
     requires java.net.http;
     requires org.json;
+    requires org.apache.commons.csv;
+    requires org.apache.commons.lang3;
 
 
     exports com.example.subscribe;

@@ -4,6 +4,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import com.example.subscribe.models.Subscription;
+import com.example.subscribe.utils.ReflectionUtils;
 import com.example.subscribe.models.Category;
 import com.example.subscribe.events.EventBusManager;
 import com.example.subscribe.events.SubscriptionAddedEvent; // You should create SubscriptionUpdatedEvent for clarity
@@ -46,6 +47,7 @@ public class EditSubscriptionController {
     @FXML
     private void initialize() {
         categoryCombo.getItems().addAll(Category.values());
+        //categoryCombo.getItems().setAll(ReflectionUtils.loadAllCategories());
     }
 
     @FXML

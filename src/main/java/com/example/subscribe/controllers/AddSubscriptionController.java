@@ -5,6 +5,7 @@ import javafx.scene.control.*;
 import javafx.stage.Stage;
 import com.example.subscribe.models.Subscription;
 import com.example.subscribe.utils.ConfigManager;
+import com.example.subscribe.utils.ReflectionUtils;
 import com.example.subscribe.models.Category;
 import com.example.subscribe.events.EventBusManager;
 import com.example.subscribe.events.SubscriptionAddedEvent;
@@ -29,6 +30,7 @@ public class AddSubscriptionController {
     @FXML
     private void initialize() {
         categoryCombo.getItems().addAll(Category.values());
+        //categoryCombo.getItems().setAll(ReflectionUtils.loadAllCategories());
         currencyField.setText(ConfigManager.get("app.currency", "USD"));
         startDatePicker.setValue(LocalDate.now());
         nextPaymentDatePicker.setValue(LocalDate.now().plusMonths(1));
