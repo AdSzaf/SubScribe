@@ -1,4 +1,7 @@
 package com.example.subscribe.patterns.strategy;
 
-public class NotificationStrategy {
+import com.example.subscribe.models.Subscription;
+
+public interface NotificationStrategy {
+    void notify(Subscription subscription, String message);
 }

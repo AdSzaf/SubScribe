@@ -19,6 +19,8 @@ import javafx.concurrent.Task;
 import javafx.application.Platform;
 
 import com.example.subscribe.models.Subscription;
+import com.example.subscribe.patterns.strategy.AlertNotificationStrategy;
+import com.example.subscribe.patterns.strategy.NotificationStrategy;
 import com.example.subscribe.models.Category;
 import com.example.subscribe.services.CurrencyService;
 import com.example.subscribe.services.PaymentApiService;
@@ -37,6 +39,7 @@ import com.example.subscribe.events.PublicHolidaysFetchedEvent;
 import com.example.subscribe.events.CurrencyChangedEvent;
 import com.example.subscribe.events.LanguageChangedEvent;
 import com.example.subscribe.services.TranslationService;
+import com.example.subscribe.patterns.factory.NotificationStrategyFactory;
 
 import java.io.IOException;
 import java.net.URL;
@@ -76,9 +79,9 @@ public class MainController implements Initializable {
 
     @FXML private Button addSubscriptionBtn;
     @FXML
-    private ImageView logoImageView;
 
-    // Data and Services
+
+    private ImageView logoImageView;
     private ObservableList<Subscription> subscriptionsList;
     private FilteredList<Subscription> filteredSubscriptions;
     private SubscriptionService subscriptionService;
@@ -86,6 +89,7 @@ public class MainController implements Initializable {
     private BigDecimal currentExchangeRate = BigDecimal.ONE;
     private String targetCurrency = "PLN"; 
     private Map<String, BigDecimal> exchangeRates = new HashMap<>();
+    private NotificationStrategy notificationStrategy;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -122,6 +126,10 @@ public class MainController implements Initializable {
         searchField.textProperty().addListener((obs, oldVal, newVal) -> filteredSubscriptions.setPredicate(this::filterPredicate));
         categoryFilter.valueProperty().addListener((obs, oldVal, newVal) -> filteredSubscriptions.setPredicate(this::filterPredicate));
         statusFilter.valueProperty().addListener((obs, oldVal, newVal) -> filteredSubscriptions.setPredicate(this::filterPredicate));
+
+        // Notifactions and factories
+         String notifType = ConfigManager.get("notification.type", "alert");
+        notificationStrategy = NotificationStrategyFactory.create(notifType);
 
         // Set initial predicate
         filteredSubscriptions.setPredicate(this::filterPredicate);
@@ -519,11 +527,11 @@ public class MainController implements Initializable {
     private void loadSubscriptions() {
         updateStatus("Loading subscriptions...");
 
-            subscriptionService.getAllSubscriptionsAsync().thenAccept(subscriptions -> {
+        subscriptionService.getAllSubscriptionsAsync().thenAccept(subscriptions -> {
             Platform.runLater(() -> {
                 subscriptionsList.clear();
                 subscriptionsList.addAll(subscriptions);
-                updateAllExchangeRatesAndSummary(); // <-- instead of updateSummaryCards()
+                updateAllExchangeRatesAndSummary(); 
                 updateStatus("Loaded " + subscriptions.size() + " subscriptions");
             });
         }).exceptionally(ex -> {
@@ -533,45 +541,6 @@ public class MainController implements Initializable {
             });
             return null;
         });
-
-        // Create background task to load subscriptions
-        Task<List<Subscription>> loadTask = new Task<List<Subscription>>() {
-            @Override
-            protected List<Subscription> call() throws Exception {
-                // Simulate loading time
-                Thread.sleep(500);
-
-                // TODO: Replace with actual service call
-                // return subscriptionService.getAllSubscriptions();
-
-                // For now, return sample data
-               // return createSampleData();
-               return subscriptionService.getAllSubscriptions();
-            }
-
-            @Override
-            protected void succeeded() {
-                Platform.runLater(() -> {
-                    subscriptionsList.clear();
-                    subscriptionsList.addAll(getValue());
-                    updateAllExchangeRatesAndSummary();
-                    updateStatus("Loaded " + getValue().size() + " subscriptions");
-                });
-            }
-
-            @Override
-            protected void failed() {
-                Platform.runLater(() -> {
-                    updateStatus("Failed to load subscriptions");
-                    showAlert("Error", "Failed to load subscriptions: " + getException().getMessage());
-                });
-            }
-        };
-
-        // Run task in background thread
-        Thread loadThread = new Thread(loadTask);
-        loadThread.setDaemon(true);
-        loadThread.start();
     }
 
     private void updateSummaryCards() {
@@ -729,12 +698,12 @@ public class MainController implements Initializable {
     }
     @Subscribe
     public void onPaymentDue(PaymentDueEvent event) {
-        Platform.runLater(() -> {
-            Subscription sub = event.getSubscription();
-            showAlert("Payment Due Soon",
-                "Subscription \"" + sub.getName() + "\" is due on " +
-                (sub.getNextPaymentDate() != null ? sub.getNextPaymentDate().toString() : "unknown") + "!");
-        });
+        Subscription sub = event.getSubscription();
+        String message = "Subscription \"" + sub.getName() + "\" is due on " +
+            (sub.getNextPaymentDate() != null ? sub.getNextPaymentDate().toString() : "unknown") + "!";
+        if (notificationStrategy != null) {
+            notificationStrategy.notify(sub, message);
+        }
     }
     @Subscribe
     public void onCurrencyChanged(CurrencyChangedEvent event) {
