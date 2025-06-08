@@ -4,6 +4,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -80,10 +81,10 @@ public class MainController implements Initializable {
     @FXML private TableColumn<Subscription, String> actionsColumn;
 
     @FXML private Button addSubscriptionBtn;
-    @FXML
+    @FXML private ImageView logoImageView;
 
-
-    private ImageView logoImageView;
+    private TableColumn<Subscription, ?> lastSortedColumn = null;
+    
     private ObservableList<Subscription> subscriptionsList;
     private FilteredList<Subscription> filteredSubscriptions;
     private SubscriptionService subscriptionService;
@@ -143,7 +144,10 @@ public class MainController implements Initializable {
         setupFilters();
 
         // Bind filtered list to table
-        subscriptionsTable.setItems(filteredSubscriptions);
+        // subscriptionsTable.setItems(filteredSubscriptions);
+        SortedList<Subscription> sortedSubscriptions = new SortedList<>(filteredSubscriptions);
+        sortedSubscriptions.comparatorProperty().bind(subscriptionsTable.comparatorProperty());
+        subscriptionsTable.setItems(sortedSubscriptions);
 
         // Load initial data
         loadSubscriptions();
@@ -167,6 +171,18 @@ public class MainController implements Initializable {
             return new SimpleStringProperty(cost != null ? cost.toString() : "0.00");
         });
 
+        costColumn.setComparator((s1, s2) -> {
+            Subscription sub1 = subscriptionsList.stream()
+                .filter(sub -> sub.getCost() != null && sub.getCost().toString().equals(s1))
+                .findFirst().orElse(null);
+            Subscription sub2 = subscriptionsList.stream()
+                .filter(sub -> sub.getCost() != null && sub.getCost().toString().equals(s2))
+                .findFirst().orElse(null);
+
+            BigDecimal val1 = sub1 != null ? getConvertedCost(sub1) : BigDecimal.ZERO;
+            BigDecimal val2 = sub2 != null ? getConvertedCost(sub2) : BigDecimal.ZERO;
+            return val1.compareTo(val2);
+        });
         // Currency column
         currencyColumn.setCellValueFactory(new PropertyValueFactory<>("currency"));
 
@@ -191,6 +207,13 @@ public class MainController implements Initializable {
             return new SimpleStringProperty(active ? "Active" : "Inactive");
         });
 
+        nameColumn.setSortable(true);
+        costColumn.setSortable(true);
+        currencyColumn.setSortable(true);
+        categoryColumn.setSortable(true);
+        nextPaymentColumn.setSortable(true);
+        statusColumn.setSortable(true);
+        
         // Actions column with buttons
         actionsColumn.setCellFactory(col -> new TableCell<Subscription, String>() {
             private final Button editBtn = new Button("Edit");
@@ -227,7 +250,7 @@ public class MainController implements Initializable {
 
             @Override
             public Category fromString(String string) {
-                return null; // Not needed for ComboBox
+                return null; 
             }
         });
 
@@ -566,8 +589,9 @@ public class MainController implements Initializable {
                 }
             }
         }
+        String formattedCost = String.format("%.2f", totalMonthlyCost);
 
-        totalMonthlyCostLabel.setText(targetCurrency + " " + totalMonthlyCost.toString());
+        totalMonthlyCostLabel.setText(targetCurrency + " " + formattedCost.toString());
         activeSubscriptionsLabel.setText(String.valueOf(activeCount));
         dueThisWeekLabel.setText(String.valueOf(dueThisWeek));
     }
@@ -676,6 +700,15 @@ public class MainController implements Initializable {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private BigDecimal getConvertedCost(Subscription sub) {
+        if (sub.getCost() == null) return BigDecimal.ZERO;
+        String currency = sub.getCurrency();
+        BigDecimal rate = currency.equals(targetCurrency)
+            ? BigDecimal.ONE
+            : exchangeRates.getOrDefault(currency, BigDecimal.ONE);
+        return sub.getCost().multiply(rate);
     }
 
     // ---------------------------------------------------------------------Event Bus Subscribers-------------------------------------------------------------------------------
