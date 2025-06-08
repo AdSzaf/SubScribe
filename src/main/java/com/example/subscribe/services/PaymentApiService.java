@@ -24,7 +24,7 @@ public class PaymentApiService {
     public CompletableFuture<List<PaymentTransaction>> fetchTransactionsAsync() {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                Thread.sleep(1000); // Simulate network delay
+                Thread.sleep(1000);
             } catch (InterruptedException ignored) {}
             List<PaymentTransaction> transactions = new ArrayList<>();
             transactions.add(new PaymentTransaction("TXN001", "Netflix", 49.99, "PLN", "2025-06-01"));

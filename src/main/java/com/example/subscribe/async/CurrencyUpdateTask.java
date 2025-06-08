@@ -6,7 +6,7 @@ public class CurrencyUpdateTask extends Task<Void> {
 
     @Override
     protected Void call() throws Exception {
-        // Background currency update logic
+
         return null;
     }
 }
