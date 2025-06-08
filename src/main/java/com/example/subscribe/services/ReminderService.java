@@ -4,6 +4,7 @@ import com.example.subscribe.models.Subscription;
 import com.example.subscribe.services.SubscriptionService;
 import com.example.subscribe.events.EventBusManager;
 import com.example.subscribe.events.PaymentDueEvent;
+import com.example.subscribe.events.SubscriptionEndingEvent;
 import com.example.subscribe.utils.ConfigManager;
 import com.example.subscribe.patterns.strategy.NotificationStrategy;
 import com.example.subscribe.patterns.strategy.AlertNotificationStrategy;
@@ -34,6 +35,9 @@ public class ReminderService {
             if (sub.isActive() && sub.getNextPaymentDate() != null) {
                 if (!sub.getNextPaymentDate().isBefore(now) && !sub.getNextPaymentDate().isAfter(reminderDate)) {
                     EventBusManager.getInstance().post(new PaymentDueEvent(sub));
+                }
+                if (sub.getNextPaymentDate().isEqual(now)) {
+                    EventBusManager.getInstance().post(new SubscriptionEndingEvent(sub));
                 }
             }
         }

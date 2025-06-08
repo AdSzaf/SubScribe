@@ -20,6 +20,7 @@ import javafx.application.Platform;
 
 import com.example.subscribe.models.Subscription;
 import com.example.subscribe.patterns.strategy.AlertNotificationStrategy;
+import com.example.subscribe.patterns.strategy.EndOfSubscriptionNotificationStrategy;
 import com.example.subscribe.patterns.strategy.NotificationStrategy;
 import com.example.subscribe.models.Category;
 import com.example.subscribe.services.CurrencyService;
@@ -32,6 +33,7 @@ import com.example.subscribe.utils.ReflectionUtils;
 import com.example.subscribe.events.CurrencyChangedEvent;
 import com.example.subscribe.events.EventBusManager;
 import com.example.subscribe.events.SubscriptionAddedEvent;
+import com.example.subscribe.events.SubscriptionEndingEvent;
 import com.google.common.eventbus.Subscribe;
 import com.example.subscribe.events.SubscriptionUpdatedEvent;
 import com.example.subscribe.events.PaymentDueEvent;
@@ -723,8 +725,6 @@ public class MainController implements Initializable {
         holidaysService.fetchHolidays(year, countryCode).thenAccept(holidays -> {
             EventBusManager.getInstance().post(new PublicHolidaysFetchedEvent(holidays));
         });
-
-        // ... (your translation code if needed)
     }
 
     private String mapLanguageToCountry(String lang) {
@@ -865,5 +865,32 @@ public class MainController implements Initializable {
             upcoming.stream().limit(5).forEach(h -> sb.append(h.date).append(" - ").append(h.name).append("\n"));
             showAlert("Public Holidays", sb.toString());
         });
+    }
+
+    @Subscribe
+    public void onSubscriptionEnding(SubscriptionEndingEvent event) {
+        Subscription sub = event.getSubscription();
+        String message = "Would you like to prolong or cancel this subscription?";
+
+        NotificationStrategy endStrategy = NotificationStrategyFactory.create(
+            "end",
+            this::prolongSubscription,
+            this::cancelSubscription
+        );
+        endStrategy.notify(sub, message);
+    }
+    private void prolongSubscription(Subscription sub) {
+        int cycle = sub.getBillingCycle(); 
+        LocalDate newDate = sub.getNextPaymentDate().plusDays(cycle);
+        sub.setNextPaymentDate(newDate);
+        subscriptionService.updateSubscription(sub);
+        Platform.runLater(() -> showAlert("Prolonged", "Subscription prolonged to " + newDate));
+        loadSubscriptions();
+    }
+    private void cancelSubscription(Subscription sub) {
+        sub.setActive(false);
+        subscriptionService.updateSubscription(sub);
+        Platform.runLater(() -> showAlert("Cancelled", "Subscription marked as inactive."));
+        loadSubscriptions();
     }
 }
