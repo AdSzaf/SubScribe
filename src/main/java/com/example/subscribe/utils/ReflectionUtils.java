@@ -17,17 +17,6 @@ public class ReflectionUtils {
                 "com.example.subscribe.models.Categories.NewsMediaCategory",
                 "com.example.subscribe.models.Categories.FitnessHealthCategory",
                 "com.example.subscribe.models.Categories.EducationCategory",
-                // "com.example.subscribe.models.GamingCategory",
-                // "com.example.subscribe.models.CommunicationCategory",
-                // "com.example.subscribe.models.BusinessCategory",
-                // "com.example.subscribe.models.UtilitiesCategory",
-                // "com.example.subscribe.models.FinanceCategory",
-                // "com.example.subscribe.models.ShoppingCategory",
-                // "com.example.subscribe.models.FoodDeliveryCategory",
-                // "com.example.subscribe.models.TransportationCategory",
-                // "com.example.subscribe.models.SecurityCategory",
-                // "com.example.subscribe.models.DesignCategory",
-                // "com.example.subscribe.models.DevelopmentCategory",
                 "com.example.subscribe.models.Categories.OtherCategory"
             };
             for (String className : categoryClassNames) {

@@ -11,7 +11,6 @@ public abstract class Category {
         return getDisplayName();
     }
 
-    // Utility: Find category by display name
     public static Category fromDisplayName(String displayName) {
         for (Category cat : ReflectionUtils.loadAllCategories()) {
             if (cat.getDisplayName().equalsIgnoreCase(displayName)) {

@@ -72,8 +72,6 @@ public class CalendarViewController implements Initializable {
         monthLabel.setText(currentMonth.getMonth().toString() + " " + currentMonth.getYear());
     }
 
-    
-    // Listen for holidays event
     @Subscribe
     public void onPublicHolidaysFetched(PublicHolidaysFetchedEvent event) {
         Platform.runLater(() -> {
@@ -90,7 +88,6 @@ public class CalendarViewController implements Initializable {
     private void showDateDetails(LocalDate date) {
         StringBuilder sb = new StringBuilder(date.toString() + ":\n");
 
-        // Subscriptions due
         List<Subscription> dueSubs = subscriptions.stream()
             .filter(s -> date.equals(s.getNextPaymentDate()))
             .collect(Collectors.toList());
@@ -99,7 +96,6 @@ public class CalendarViewController implements Initializable {
             dueSubs.forEach(s -> sb.append("• ").append(s.getName()).append("\n"));
         }
 
-        // Holidays
         List<PublicHolidaysService.Holiday> holidaysOnDate = holidays.stream()
             .filter(h -> LocalDate.parse(h.date).equals(date))
             .collect(Collectors.toList());

@@ -59,7 +59,6 @@ import java.util.HashMap;
 
 public class MainController implements Initializable {
 
-    // FXML Injected Components
     @FXML private Label totalMonthlyCostLabel;
     @FXML private Label activeSubscriptionsLabel;
     @FXML private Label dueThisWeekLabel;
@@ -103,13 +102,10 @@ public class MainController implements Initializable {
             System.err.println("Error loading image: " + e.getMessage());
         }
 
-        // Initialize services
         subscriptionService = new SubscriptionService();
 
-        // Register for events
         EventBusManager.getInstance().register(this);
 
-        // Initialize data collections
         subscriptionsList = FXCollections.observableArrayList();
         filteredSubscriptions = new FilteredList<>(subscriptionsList);
 
@@ -120,51 +116,41 @@ public class MainController implements Initializable {
             });
         });
 
-        // Fetch exchange rate asynchronously
         String baseCurrency = ConfigManager.get("currency.base", "USD");
         targetCurrency = ConfigManager.get("app.currency", "PLN");
 
-        // Add listeners for realtime filtering
         searchField.textProperty().addListener((obs, oldVal, newVal) -> filteredSubscriptions.setPredicate(this::filterPredicate));
         categoryFilter.valueProperty().addListener((obs, oldVal, newVal) -> filteredSubscriptions.setPredicate(this::filterPredicate));
         statusFilter.valueProperty().addListener((obs, oldVal, newVal) -> filteredSubscriptions.setPredicate(this::filterPredicate));
 
-        // Notifactions and factories
         String notifType = ConfigManager.get("notification.type", "alert");
         notificationStrategy = NotificationStrategyFactory.create(notifType);
 
-        // Set initial predicate
         filteredSubscriptions.setPredicate(this::filterPredicate);
 
         fetchAndUpdateExchangeRate();
 
-        // Setup UI components
         setupTableColumns();
         setupFilters();
 
-        // Bind filtered list to table
-        // subscriptionsTable.setItems(filteredSubscriptions);
+
         SortedList<Subscription> sortedSubscriptions = new SortedList<>(filteredSubscriptions);
         sortedSubscriptions.comparatorProperty().bind(subscriptionsTable.comparatorProperty());
         subscriptionsTable.setItems(sortedSubscriptions);
 
-        // Load initial data
         loadSubscriptions();
 
-        // String lang = ConfigManager.get("app.language", "en");
-        // EventBusManager.getInstance().post(new LanguageChangedEvent(lang));
 
-        // Update status
+
         updateStatus("Application loaded successfully");
         updateLastUpdateTime();
 
     }
 
     private void setupTableColumns() {
-        // Name column
+
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
 
-        // Cost column with formatting
         costColumn.setCellValueFactory(cellData -> {
             BigDecimal cost = cellData.getValue().getCost();
             return new SimpleStringProperty(cost != null ? cost.toString() : "0.00");
@@ -182,16 +168,14 @@ public class MainController implements Initializable {
             BigDecimal val2 = sub2 != null ? getConvertedCost(sub2) : BigDecimal.ZERO;
             return val1.compareTo(val2);
         });
-        // Currency column
+
         currencyColumn.setCellValueFactory(new PropertyValueFactory<>("currency"));
 
-        // Category column
         categoryColumn.setCellValueFactory(cellData -> {
             Category category = cellData.getValue().getCategory();
             return new SimpleStringProperty(category != null ? category.getDisplayName() : "Other");
         });
 
-        // Next payment column with date formatting
         nextPaymentColumn.setCellValueFactory(cellData -> {
             LocalDate nextPayment = cellData.getValue().getNextPaymentDate();
             if (nextPayment != null) {
@@ -200,7 +184,6 @@ public class MainController implements Initializable {
             return new SimpleStringProperty("N/A");
         });
 
-        // Status column
         statusColumn.setCellValueFactory(cellData -> {
             boolean active = cellData.getValue().isActive();
             return new SimpleStringProperty(active ? "Active" : "Inactive");
@@ -212,8 +195,7 @@ public class MainController implements Initializable {
         categoryColumn.setSortable(true);
         nextPaymentColumn.setSortable(true);
         statusColumn.setSortable(true);
-        
-        // Actions column with buttons
+
         actionsColumn.setCellFactory(col -> new TableCell<Subscription, String>() {
             private final Button editBtn = new Button("Edit");
             private final Button deleteBtn = new Button("Delete");
@@ -238,9 +220,9 @@ public class MainController implements Initializable {
     }
 
     private void setupFilters() {
-        // Setup category filter
+
         categoryFilter.getItems().setAll(ReflectionUtils.loadAllCategories());
-        categoryFilter.getItems().add(0, null); // "All categories" option
+        categoryFilter.getItems().add(0, null);
         categoryFilter.setConverter(new javafx.util.StringConverter<Category>() {
             @Override
             public String toString(Category category) {
@@ -253,13 +235,11 @@ public class MainController implements Initializable {
             }
         });
 
-        // Setup status filter
         statusFilter.getItems().addAll("All", "Active", "Inactive");
         statusFilter.setValue("All");
 
-        // Setup filtering logic
         filteredSubscriptions.setPredicate(subscription -> {
-            // Search filter
+
             String searchText = searchField.getText();
             if (searchText != null && !searchText.isEmpty()) {
                 String lowerCaseFilter = searchText.toLowerCase();
@@ -268,13 +248,11 @@ public class MainController implements Initializable {
                 }
             }
 
-            // Category filter
             Category selectedCategory = categoryFilter.getValue();
             if (selectedCategory != null && !selectedCategory.equals(subscription.getCategory())) {
                 return false;
             }
 
-            // Status filter
             String selectedStatus = statusFilter.getValue();
             if (!"All".equals(selectedStatus)) {
                 boolean isActive = "Active".equals(selectedStatus);
@@ -286,9 +264,9 @@ public class MainController implements Initializable {
             return true;
         });
     }
-    // Filtering logic as a method for reuse
+
     private boolean filterPredicate(Subscription subscription) {
-        // Search filter
+
         String searchText = searchField.getText();
         if (searchText != null && !searchText.isEmpty()) {
             String lowerCaseFilter = searchText.toLowerCase();
@@ -297,7 +275,6 @@ public class MainController implements Initializable {
             }
         }
 
-        // Category filter (compare by class)
         Category selectedCategory = categoryFilter.getValue();
         if (selectedCategory != null) {
             Category subCategory = subscription.getCategory();
@@ -306,7 +283,6 @@ public class MainController implements Initializable {
             }
         }
 
-        // Status filter
         String selectedStatus = statusFilter.getValue();
         if (!"All".equals(selectedStatus)) {
             boolean isActive = "Active".equals(selectedStatus);
@@ -318,7 +294,6 @@ public class MainController implements Initializable {
         return true;
     }
 
-    // ---------------------------------------------------------------------------FXML------------------------------------------------------------------
 
     @FXML
     private void addSubscription() {
@@ -403,18 +378,18 @@ public class MainController implements Initializable {
                         List<Subscription> current = subscriptionService.getAllSubscriptions();
 
                         for (Subscription importedSub : imported) {
-                            // Try to find by name (or use another unique field)
+
                             Subscription existing = current.stream()
                                 .filter(s -> s.getName().equalsIgnoreCase(importedSub.getName()))
                                 .findFirst()
                                 .orElse(null);
 
                             if (existing != null) {
-                                // Update existing
+
                                 importedSub.setId(existing.getId());
                                 subscriptionService.updateSubscription(importedSub);
                             } else {
-                                // Insert new
+
                                 subscriptionService.addSubscription(importedSub);
                             }
                         }
@@ -492,7 +467,6 @@ public class MainController implements Initializable {
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(addSubscriptionBtn.getScene().getWindow());
 
-            // Unregister controller when window closes
             stage.setOnHiding(e -> controller.onClose());
 
             stage.showAndWait();
@@ -545,8 +519,6 @@ public class MainController implements Initializable {
         }
     }
 
-
-    // -----------------------------------------------------------------------------Business Logic Methods--------------------------------------------------------------------
 
     private void loadSubscriptions() {
         updateStatus("Loading subscriptions...");
@@ -634,9 +606,8 @@ public class MainController implements Initializable {
         });
     }
 
-    //Currency Exchange Rate Fetching
     private void fetchAndUpdateExchangeRate() {
-        String baseCurrency = "USD"; // or ConfigManager.get("currency.base", "USD");
+        String baseCurrency = "USD";
         targetCurrency = ConfigManager.get("app.currency", "PLN");
 
         if (baseCurrency.equals(targetCurrency)) {
@@ -673,18 +644,16 @@ public class MainController implements Initializable {
             futures.add(currencyService.getExchangeRateAsync(currency, targetCurrency)
                 .thenAccept(rate -> exchangeRates.put(currency, rate))
                 .exceptionally(ex -> {
-                    exchangeRates.put(currency, BigDecimal.ONE); // fallback
+                    exchangeRates.put(currency, BigDecimal.ONE);
                     return null;
                 }));
         }
 
-        // When all rates are fetched, update summary
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenRun(() ->
             Platform.runLater(this::updateSummaryCards)
         );
     }
 
-    // Utility Methods
 
     private void updateStatus(String message) {
         statusLabel.setText(message);
@@ -711,7 +680,6 @@ public class MainController implements Initializable {
         return sub.getCost().multiply(rate);
     }
 
-    // ---------------------------------------------------------------------Event Bus Subscribers-------------------------------------------------------------------------------
 
     @Subscribe
     public void onSubscriptionAdded(SubscriptionAddedEvent event) {
@@ -751,7 +719,7 @@ public class MainController implements Initializable {
     @Subscribe
     public void onLanguageChanged(LanguageChangedEvent event) {
         String lang = event.getLanguage();
-        String countryCode = mapLanguageToCountry(lang); // e.g., "en" -> "US", "pl" -> "PL"
+        String countryCode = mapLanguageToCountry(lang);
         int year = java.time.LocalDate.now().getYear();
 
         PublicHolidaysService holidaysService = new PublicHolidaysService();

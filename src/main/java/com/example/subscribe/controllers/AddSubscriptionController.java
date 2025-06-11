@@ -42,12 +42,11 @@ public class AddSubscriptionController {
         String name = nameField.getText();
         String costText = costField.getText();
 
-        // Validate name
         if (!com.example.subscribe.utils.ValidationUtils.isValidSubscriptionName(name)) {
             showAlert("Validation Error", "Subscription name cannot be empty and must be at most 50 characters.");
             return;
         }
-        // Validate cost
+
         try {
             new java.math.BigDecimal(costText);
         } catch (NumberFormatException e) {

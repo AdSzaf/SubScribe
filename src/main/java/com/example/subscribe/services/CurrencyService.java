@@ -9,8 +9,8 @@ import java.math.BigDecimal;
 import org.json.JSONObject;
 
 public class CurrencyService {
-    // private static final String API_KEY = "4fdafa156eb049ed9bd0f8f27a47aab5";
-    // private static final String API_URL = "https://api.currencyfreaks.com/v2.0/rates/latest?apikey=%s&base=%s";
+
+
 
     public CompletableFuture<BigDecimal> getExchangeRateAsync(String fromCurrency, String toCurrency) {
             return CompletableFuture.supplyAsync(() -> {

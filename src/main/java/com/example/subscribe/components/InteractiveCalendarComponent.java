@@ -26,10 +26,9 @@ public class InteractiveCalendarComponent extends GridPane {
     private void buildCalendar() {
         getChildren().clear();
         LocalDate firstOfMonth = currentMonth.atDay(1);
-        int dayOfWeek = firstOfMonth.getDayOfWeek().getValue(); // 1=Monday
+        int dayOfWeek = firstOfMonth.getDayOfWeek().getValue();
         int daysInMonth = currentMonth.lengthOfMonth();
 
-        // Add day labels
         String[] days = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
         for (int i = 0; i < 7; i++) {
             add(new Label(days[i]), i, 0);
@@ -40,7 +39,7 @@ public class InteractiveCalendarComponent extends GridPane {
         for (int day = 1; day <= daysInMonth; day++) {
             LocalDate date = currentMonth.atDay(day);
             Label label = new Label(String.valueOf(day));
-            label.setPrefSize(40, 30); // Set cell size
+            label.setPrefSize(40, 30);
             label.setStyle("-fx-alignment: center; -fx-border-color: #ccc; -fx-font-size: 14;");
 
             boolean isPayment = paymentDates.contains(date);

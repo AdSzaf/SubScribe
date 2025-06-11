@@ -10,7 +10,6 @@ public class ConfigManager {
     public static void loadConfig() {
         File configFile = new File(CONFIG_FILE_NAME);
 
-        // If not exists, copy from resources
         if (!configFile.exists()) {
             try (InputStream in = ConfigManager.class.getResourceAsStream("/config.properties");
                  OutputStream out = new FileOutputStream(configFile)) {
@@ -26,7 +25,6 @@ public class ConfigManager {
             }
         }
 
-        // Now always load from file
         try (InputStream input = new FileInputStream(configFile)) {
             properties.load(input);
         } catch (IOException ex) {

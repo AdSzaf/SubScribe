@@ -16,19 +16,16 @@ public class SubScribeApplication extends Application {
     private ReminderService reminderService;
     @Override
     public void start(Stage stage) throws Exception {
-        // Initialize configuration
+
         ConfigManager.loadConfig();
 
-        // Initialize database
         DatabaseManager.getInstance().initDatabase();
 
-        // Initialize event bus
         EventBusManager.getInstance();
 
         reminderService = new ReminderService();
         reminderService.start();
 
-        // Load main FXML
         FXMLLoader fxmlLoader = new FXMLLoader(
                 SubScribeApplication.class.getResource("/com/example/subscribe/fxml/main-view.fxml")
         );

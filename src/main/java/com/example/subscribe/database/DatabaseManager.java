@@ -10,7 +10,7 @@ public class DatabaseManager {
     private static final String DB_URL = "jdbc:sqlite:subscriptions.db";
 
     private DatabaseManager() {
-        // Private constructor for singleton
+
     }
 
     public static synchronized DatabaseManager getInstance() {

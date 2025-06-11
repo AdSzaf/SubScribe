@@ -45,7 +45,7 @@ public class TranslationService {
     }
 
     public CompletableFuture<List<String>> translate(List<String> texts, String targetLang) {
-        // LibreTranslate supports only one string per request, so we translate in parallel
+
         List<CompletableFuture<String>> futures = texts.stream()
                 .map(text -> translate(text, targetLang))
                 .collect(Collectors.toList());

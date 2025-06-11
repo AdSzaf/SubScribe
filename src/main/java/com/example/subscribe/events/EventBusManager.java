@@ -30,7 +30,6 @@ public class EventBusManager {
         eventBus.post(event);
     }
 
-    // For testing or debugging
     public EventBus getEventBus() {
         return eventBus;
     }

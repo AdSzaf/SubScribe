@@ -13,7 +13,7 @@ public class ICalendarExporter {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
 
         for (Subscription sub : subscriptions) {
-            if (sub.isActive() && sub.getNextPaymentDate() != null) { // <-- only active
+            if (sub.isActive() && sub.getNextPaymentDate() != null) {
                 sb.append("BEGIN:VEVENT\n");
                 sb.append("SUMMARY:").append(sub.getName()).append(" Payment Due\n");
                 sb.append("DTSTART;VALUE=DATE:").append(sub.getNextPaymentDate().format(dtf)).append("\n");

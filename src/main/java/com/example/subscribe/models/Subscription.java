@@ -10,20 +10,18 @@ public class Subscription {
     private String currency;
     private LocalDate startDate;
     private LocalDate nextPaymentDate;
-    private int billingCycle; // days
+    private int billingCycle;
     private Category category;
     private boolean active;
     private String description;
     private String website;
 
-    // Default constructor
     public Subscription() {
         this.active = true;
         this.currency = "USD";
-        this.billingCycle = 30; // Default to monthly
+        this.billingCycle = 30;
     }
 
-    // Constructor with required fields
     public Subscription(String name, BigDecimal cost, Category category) {
         this();
         this.name = name;
@@ -31,7 +29,6 @@ public class Subscription {
         this.category = category;
     }
 
-    // Full constructor
     public Subscription(Long id, String name, BigDecimal cost, String currency,
                         LocalDate startDate, LocalDate nextPaymentDate,
                         int billingCycle, Category category, boolean active) {
@@ -46,7 +43,6 @@ public class Subscription {
         this.active = active;
     }
 
-    // Getters
     public Long getId() {
         return id;
     }
@@ -91,7 +87,6 @@ public class Subscription {
         return website;
     }
 
-    // Setters
     public void setId(Long id) {
         this.id = id;
     }
@@ -136,19 +131,17 @@ public class Subscription {
         this.website = website;
     }
 
-    // Utility methods
     public BigDecimal getMonthlyCost() {
         if (cost == null) return BigDecimal.ZERO;
 
-        // Convert to monthly cost based on billing cycle
         if (billingCycle == 30) {
-            return cost; // Already monthly
+            return cost;
         } else if (billingCycle == 365) {
-            return cost.divide(new BigDecimal("12"), 2, BigDecimal.ROUND_HALF_UP); // Annual to monthly
+            return cost.divide(new BigDecimal("12"), 2, BigDecimal.ROUND_HALF_UP);
         } else if (billingCycle == 7) {
-            return cost.multiply(new BigDecimal("4.33")); // Weekly to monthly (4.33 weeks per month)
+            return cost.multiply(new BigDecimal("4.33"));
         } else {
-            // Custom calculation for other cycles
+
             return cost.multiply(new BigDecimal("30")).divide(new BigDecimal(billingCycle), 2, BigDecimal.ROUND_HALF_UP);
         }
     }
@@ -156,7 +149,6 @@ public class Subscription {
     public BigDecimal getAnnualCost() {
         if (cost == null) return BigDecimal.ZERO;
 
-        // Convert to annual cost
         return getMonthlyCost().multiply(new BigDecimal("12"));
     }
 
@@ -178,7 +170,6 @@ public class Subscription {
         return nextPaymentDate.isBefore(LocalDate.now());
     }
 
-    // Override methods for proper object handling
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;

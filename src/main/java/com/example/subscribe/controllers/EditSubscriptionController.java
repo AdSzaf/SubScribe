@@ -7,7 +7,7 @@ import com.example.subscribe.models.Subscription;
 import com.example.subscribe.utils.ReflectionUtils;
 import com.example.subscribe.models.Category;
 import com.example.subscribe.events.EventBusManager;
-import com.example.subscribe.events.SubscriptionAddedEvent; // You should create SubscriptionUpdatedEvent for clarity
+import com.example.subscribe.events.SubscriptionAddedEvent;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -30,7 +30,7 @@ public class EditSubscriptionController {
 
     public void setSubscription(Subscription subscription) {
         this.subscription = subscription;
-        // Populate fields
+
         nameField.setText(subscription.getName());
         costField.setText(subscription.getCost() != null ? subscription.getCost().toString() : "");
         currencyField.setText(subscription.getCurrency());
@@ -53,12 +53,12 @@ public class EditSubscriptionController {
     private void saveSubscription() {
         String name = nameField.getText();
         String costText = costField.getText();
-        // Validate name
+
         if (!com.example.subscribe.utils.ValidationUtils.isValidSubscriptionName(name)) {
             showAlert("Validation Error", "Subscription name cannot be empty and must be at most 50 characters.");
             return;
         }
-        // Validate cost
+
         try {
             new java.math.BigDecimal(costText);
         } catch (NumberFormatException e) {
@@ -77,7 +77,6 @@ public class EditSubscriptionController {
             subscription.setDescription(descriptionArea.getText());
             subscription.setWebsite(websiteField.getText());
 
-            // Post update event (create SubscriptionUpdatedEvent class)
             EventBusManager.getInstance().post(new com.example.subscribe.events.SubscriptionUpdatedEvent(subscription));
             closeDialog();
         } catch (Exception e) {

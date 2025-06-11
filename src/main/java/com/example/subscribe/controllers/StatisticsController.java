@@ -24,7 +24,7 @@ public class StatisticsController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Will be set from MainController
+
     }
 
     public void updateChart() {
