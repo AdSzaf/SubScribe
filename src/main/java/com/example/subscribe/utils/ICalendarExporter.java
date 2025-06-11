@@ -7,13 +7,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class ICalendarExporter {
-    public static void exportSubscriptionsToICS(List<Subscription> subscriptions, String filePath) throws IOException {
+   public static void exportSubscriptionsToICS(List<Subscription> subscriptions, String filePath) throws IOException {
         StringBuilder sb = new StringBuilder();
         sb.append("BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//SubScribe//EN\n");
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
 
         for (Subscription sub : subscriptions) {
-            if (sub.getNextPaymentDate() != null) {
+            if (sub.isActive() && sub.getNextPaymentDate() != null) { // <-- only active
                 sb.append("BEGIN:VEVENT\n");
                 sb.append("SUMMARY:").append(sub.getName()).append(" Payment Due\n");
                 sb.append("DTSTART;VALUE=DATE:").append(sub.getNextPaymentDate().format(dtf)).append("\n");

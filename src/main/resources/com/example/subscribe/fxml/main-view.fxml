@@ -14,9 +14,9 @@
     <top>
         <MenuBar>
             <Menu text="File">
-                <MenuItem text="Import Subscriptions" onAction="#importSubscriptions"/>
-                <MenuItem text="Export Subscriptions" onAction="#exportSubscriptions"/>
-                <MenuItem text="Export Payments to Calendar" onAction="#exportPaymentsToCalendar"/>
+                <MenuItem text="Import Subscriptions (CSV)" onAction="#importSubscriptions"/>
+                <MenuItem text="Export Subscriptions (CSV)" onAction="#exportSubscriptions"/>
+                <MenuItem text="Export Payments to Calendar (ICS)" onAction="#exportPaymentsToCalendar"/>
                 <SeparatorMenuItem />
                 <MenuItem text="Exit" onAction="#exitApplication"/>
             </Menu>

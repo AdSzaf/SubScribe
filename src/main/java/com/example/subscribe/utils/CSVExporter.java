@@ -12,14 +12,15 @@ public class CSVExporter {
     public static void exportToCSV(List<Subscription> subscriptions, String filePath) throws IOException {
         try (Writer writer = new FileWriter(filePath);
              CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT
-                     .withHeader("Name", "Cost", "Currency", "Category", "NextPaymentDate"))) {
+                     .withHeader("Name", "Cost", "Currency", "Category", "NextPaymentDate", "Active"))) {
             for (Subscription sub : subscriptions) {
                 csvPrinter.printRecord(
                     sub.getName(),
                     sub.getCost(),
                     sub.getCurrency(),
                     sub.getCategory() != null ? sub.getCategory().getDisplayName() : "",
-                    sub.getNextPaymentDate()
+                    sub.getNextPaymentDate(),
+                    sub.isActive()
                 );
             }
         }
@@ -31,6 +32,11 @@ public class CSVExporter {
             CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader())) {
             for (CSVRecord record : csvParser) {
                 Category category = Category.fromDisplayName(record.get("Category"));
+                boolean active = true;
+                if (record.isMapped("Active")) {
+                    String activeStr = record.get("Active");
+                    active = activeStr == null || activeStr.isEmpty() ? true : Boolean.parseBoolean(activeStr);
+                }
                 Subscription sub = new Subscription(
                     null,
                     record.get("Name"),
@@ -39,8 +45,8 @@ public class CSVExporter {
                     null,
                     java.time.LocalDate.parse(record.get("NextPaymentDate")),
                     30,
-                    category, // <-- use resolved category
-                    true
+                    category,
+                    active
                 );
                 imported.add(sub);
             }

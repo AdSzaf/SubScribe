@@ -97,7 +97,7 @@ public class MainController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
 
         try {
-            Image image = new Image(getClass().getResourceAsStream("/com/example/subscribe/images/logo.png"));
+            Image image = new Image(getClass().getResourceAsStream("/com/example/subscribe/images/logo_origin.png"));
             logoImageView.setImage(image);
         } catch (Exception e) {
             System.err.println("Error loading image: " + e.getMessage());
@@ -761,12 +761,12 @@ public class MainController implements Initializable {
     }
 
     private String mapLanguageToCountry(String lang) {
-        if (lang == null) return "US";
-        return switch (lang.toLowerCase()) {
-            case "en" -> "US"; // special case
-            default -> lang.toUpperCase();
-        };
-    }
+    if (lang == null) return "US";
+    return switch (lang.toLowerCase()) {
+        case "en" -> "US";
+        default -> lang.toUpperCase();
+    };
+}
 
     @Subscribe
     public void onPublicHolidaysFetched(PublicHolidaysFetchedEvent event) {

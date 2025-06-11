@@ -1,4 +1,4 @@
-// src/main/java/com/example/subscribe/SubScribeApplication.java
+
 package com.example.subscribe;
 
 import javafx.application.Application;

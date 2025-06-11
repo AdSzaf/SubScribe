@@ -17,7 +17,7 @@
             <TextField fx:id="currencyField" promptText="e.g. USD"/>
         </HBox>
         <HBox spacing="10">
-            <Label text="Language:"/>
+            <Label text="Country code:"/>
             <TextField fx:id="languageField" promptText="e.g. en"/>
         </HBox>
         <HBox spacing="10">
