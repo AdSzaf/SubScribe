@@ -67,7 +67,7 @@ public class CalendarViewController implements Initializable {
         calendarComponent.setMonth(currentMonth);
         calendarComponent.highlightPaymentDates(paymentDates);
         calendarComponent.highlightHolidayDates(
-            holidays.stream().map(h -> LocalDate.parse(h.date)).collect(Collectors.toList())
+            holidays.stream().map(h -> LocalDate.parse(h.date)).collect(Collectors.toList()) // dla każdego obiektu h który jest Holiday weź h.date czyli string i zrób z niego local date
         );
         monthLabel.setText(currentMonth.getMonth().toString() + " " + currentMonth.getYear());
     }

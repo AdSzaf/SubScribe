@@ -39,7 +39,6 @@ import com.google.common.eventbus.Subscribe;
 import com.example.subscribe.events.SubscriptionUpdatedEvent;
 import com.example.subscribe.events.PaymentDueEvent;
 import com.example.subscribe.events.PublicHolidaysFetchedEvent;
-import com.example.subscribe.events.CurrencyChangedEvent;
 import com.example.subscribe.events.LanguageChangedEvent;
 import com.example.subscribe.services.TranslationService;
 import com.example.subscribe.patterns.factory.NotificationStrategyFactory;
@@ -131,7 +130,7 @@ public class MainController implements Initializable {
         statusFilter.valueProperty().addListener((obs, oldVal, newVal) -> filteredSubscriptions.setPredicate(this::filterPredicate));
 
         // Notifactions and factories
-         String notifType = ConfigManager.get("notification.type", "alert");
+        String notifType = ConfigManager.get("notification.type", "alert");
         notificationStrategy = NotificationStrategyFactory.create(notifType);
 
         // Set initial predicate
@@ -684,6 +683,7 @@ public class MainController implements Initializable {
             Platform.runLater(this::updateSummaryCards)
         );
     }
+
     // Utility Methods
 
     private void updateStatus(String message) {
@@ -761,127 +761,11 @@ public class MainController implements Initializable {
     }
 
     private String mapLanguageToCountry(String lang) {
-        return switch (lang) {
-            case "al" -> "AL";
-            case "ad" -> "AD";
-            case "ar" -> "AR";
-            case "am" -> "AM";
-            case "au" -> "AU";
-            case "at" -> "AT";
-            case "bs" -> "BS";
-            case "bb" -> "BB";
-            case "by" -> "BY";
-            case "be" -> "BE";
-            case "bz" -> "BZ";
-            case "bj" -> "BJ";
-            case "bo" -> "BO";
-            case "ba" -> "BA";
-            case "bw" -> "BW";
-            case "br" -> "BR";
-            case "bg" -> "BG";
-            case "ca" -> "CA";
-            case "cl" -> "CL";
-            case "cn" -> "CN";
-            case "co" -> "CO";
-            case "cr" -> "CR";
-            case "hr" -> "HR";
-            case "cu" -> "CU";
-            case "cy" -> "CY";
-            case "cz" -> "CZ";
-            case "cd" -> "CD";
-            case "dk" -> "DK";
-            case "do" -> "DO";
-            case "ec" -> "EC";
-            case "eg" -> "EG";
-            case "sv" -> "SV";
-            case "ee" -> "EE";
-            case "fo" -> "FO";
-            case "fi" -> "FI";
-            case "fr" -> "FR";
-            case "ga" -> "GA";
-            case "gm" -> "GM";
-            case "ge" -> "GE";
-            case "de" -> "DE";
-            case "gi" -> "GI";
-            case "gr" -> "GR";
-            case "gl" -> "GL";
-            case "gd" -> "GD";
-            case "gt" -> "GT";
-            case "gg" -> "GG";
-            case "gy" -> "GY";
-            case "ht" -> "HT";
-            case "hn" -> "HN";
-            case "hk" -> "HK";
-            case "hu" -> "HU";
-            case "is" -> "IS";
-            case "id" -> "ID";
-            case "ie" -> "IE";
-            case "im" -> "IM";
-            case "it" -> "IT";
-            case "jm" -> "JM";
-            case "jp" -> "JP";
-            case "je" -> "JE";
-            case "kz" -> "KZ";
-            case "lv" -> "LV";
-            case "ls" -> "LS";
-            case "li" -> "LI";
-            case "lt" -> "LT";
-            case "lu" -> "LU";
-            case "mg" -> "MG";
-            case "mt" -> "MT";
-            case "mx" -> "MX";
-            case "md" -> "MD";
-            case "mc" -> "MC";
-            case "mn" -> "MN";
-            case "me" -> "ME";
-            case "ms" -> "MS";
-            case "ma" -> "MA";
-            case "mz" -> "MZ";
-            case "na" -> "NA";
-            case "nl" -> "NL";
-            case "nz" -> "NZ";
-            case "ni" -> "NI";
-            case "ne" -> "NE";
-            case "ng" -> "NG";
-            case "mk" -> "MK";
-            case "no" -> "NO";
-            case "pa" -> "PA";
-            case "pg" -> "PG";
-            case "py" -> "PY";
-            case "pe" -> "PE";
-            case "ph" -> "PH";
-            case "pl" -> "PL";
-            case "pt" -> "PT";
-            case "pr" -> "PR";
-            case "cg" -> "CG";
-            case "ro" -> "RO";
-            case "ru" -> "RU";
-            case "sm" -> "SM";
-            case "rs" -> "RS";
-            case "sg" -> "SG";
-            case "sk" -> "SK";
-            case "si" -> "SI";
-            case "za" -> "ZA";
-            case "kr" -> "KR";
-            case "es" -> "ES";
-            case "sr" -> "SR";
-            case "sj" -> "SJ";
-            case "se" -> "SE";
-            case "ch" -> "CH";
-            case "tn" -> "TN";
-            case "tr" -> "TR";
-            case "ua" -> "UA";
-            case "gb" -> "GB";
-            case "en" -> "US";
-            case "uy" -> "UY";
-            case "va" -> "VA";
-            case "ve" -> "VE";
-            case "vn" -> "VN";
-            case "zw" -> "ZW";
-            case "ax" -> "AX";
-            default -> "US";
+        if (lang == null) return "US";
+        return switch (lang.toLowerCase()) {
+            case "en" -> "US"; // special case
+            default -> lang.toUpperCase();
         };
-
     }
 
     @Subscribe
